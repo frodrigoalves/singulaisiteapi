@@ -168,7 +168,7 @@ export function Footer() {
                 </a>
                 <span className="text-muted-foreground/50">|</span>
                 <p className="text-sm text-muted-foreground">
-                  Built on Ethereum Sepolia Network
+                  SGL - Native Currency
                 </p>
               </div>
             </div>

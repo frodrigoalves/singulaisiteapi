@@ -9,6 +9,7 @@ import {
   Wallet,
   Mail,
   ArrowRight,
+  ArrowLeft,
   Chrome,
   Smartphone,
   Key,
@@ -385,6 +386,17 @@ export default function ConnectPage() {
             </button>
           )}
         </GlassCard>
+
+        {/* Back to Home Link */}
+        <div className="text-center mt-6">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Home
+          </Link>
+        </div>
       </Container>
     </div>
   );
