@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Container } from "@/components/layout/container";
 import logo from "@/assets/logo-singulai.png";
-import { Twitter, Github, MessageCircle, FileText } from "lucide-react";
+import { Twitter, Github, MessageCircle, FileText, Blocks, Atom, ShieldCheck } from "lucide-react";
 
 const footerLinks = {
   product: [
@@ -136,13 +136,42 @@ export function Footer() {
 
         {/* Bottom Bar */}
         <div className="py-6 border-t border-border">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-muted-foreground">
-              2024 SingulAI Platform. All rights reserved.
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Built on Ethereum Sepolia Network
-            </p>
+          <div className="flex flex-col gap-4">
+            {/* Security Badges */}
+            <div className="flex items-center justify-center gap-6">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Blocks className="w-4 h-4" />
+                <span className="text-xs">Blockchain</span>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Atom className="w-4 h-4" />
+                <span className="text-xs">Safe Quantum</span>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <ShieldCheck className="w-4 h-4" />
+                <span className="text-xs">Web Security</span>
+              </div>
+            </div>
+            
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <p className="text-sm text-muted-foreground">
+                2024 SingulAI Platform. All rights reserved.
+              </p>
+              <div className="flex items-center gap-4">
+                <a 
+                  href="https://rodrigo.run" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Developed by rodrigo.run
+                </a>
+                <span className="text-muted-foreground/50">|</span>
+                <p className="text-sm text-muted-foreground">
+                  Built on Ethereum Sepolia Network
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </Container>

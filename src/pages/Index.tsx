@@ -5,6 +5,7 @@ import { FeaturesSection } from "@/components/landing/features-section";
 import { HowItWorksSection } from "@/components/landing/how-it-works-section";
 import { SecuritySection } from "@/components/landing/security-section";
 import { TokenomicsSection } from "@/components/landing/tokenomics-section";
+import { ContactSection } from "@/components/landing/contact-section";
 import { CtaSection } from "@/components/landing/cta-section";
 import { Footer } from "@/components/landing/footer";
 
@@ -19,6 +20,7 @@ const Index = () => {
         <HowItWorksSection />
         <SecuritySection />
         <TokenomicsSection />
+        <ContactSection />
         <CtaSection />
       </main>
       <Footer />
