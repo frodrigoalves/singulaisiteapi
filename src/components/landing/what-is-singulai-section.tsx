@@ -1,13 +1,29 @@
 import { Section } from "@/components/layout/section";
 import { GlassCard } from "@/components/ui/glass-card";
 import penDiagram from "@/assets/pen-diagrama.png";
-import { Fingerprint, Network, Lock, Send } from "lucide-react";
+import { ScanFace, ShieldAlert, Cpu, Accessibility } from "lucide-react";
 
-const points = [
-  { icon: Fingerprint, text: "Decentralized digital identity" },
-  { icon: Lock, text: "Self-custody of assets" },
-  { icon: Network, text: "Programmable inheritance" },
-  { icon: Send, text: "Time-locked messages" },
+const features = [
+  { 
+    icon: ScanFace, 
+    title: "Multimodal Auth", 
+    description: "Face, fingerprint and gesture recognition in one natural motion" 
+  },
+  { 
+    icon: ShieldAlert, 
+    title: "Anti-Fraud Protection", 
+    description: "Intruder photo capture, geolocation and on-chain audit logs" 
+  },
+  { 
+    icon: Cpu, 
+    title: "Hardware Security", 
+    description: "Secure Element with auto-wipe tamper detection" 
+  },
+  { 
+    icon: Accessibility, 
+    title: "Inclusive Design", 
+    description: "Voice commands, haptic feedback and TTS for accessibility" 
+  },
 ];
 
 export function WhatIsSingulaiSection() {
@@ -22,7 +38,7 @@ export function WhatIsSingulaiSection() {
           <GlassCard variant="glow" size="lg" className="p-4">
             <img
               src={penDiagram}
-              alt="SingulAI Identity Device"
+              alt="SingulAI Pen Device"
               className="w-full h-auto rounded-2xl"
             />
           </GlassCard>
@@ -31,7 +47,7 @@ export function WhatIsSingulaiSection() {
           <div className="absolute -bottom-4 -right-4 lg:bottom-8 lg:-right-8 animate-float">
             <GlassCard size="sm" className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-sm font-medium text-foreground">Ethereum Secured</span>
+              <span className="text-sm font-medium text-foreground">LGPD/GDPR Compliant - Ethereum Secured</span>
             </GlassCard>
           </div>
         </div>
@@ -40,26 +56,29 @@ export function WhatIsSingulaiSection() {
         <div className="space-y-8 order-1 lg:order-2">
           <div className="space-y-4">
             <h2 className="text-h2 font-bold text-foreground">
-              What is <span className="text-gradient">SingulAI</span>?
+              <span className="text-gradient">SingulAI</span> Pen
             </h2>
-            <p className="text-body-lg text-muted-foreground">
-              SingulAI is a next-generation platform that combines blockchain technology with digital identity management. We empower individuals to take full control of their digital presence and assets.
+            <p className="text-body-lg text-muted-foreground italic">
+              "Your signature is your key. Your identity, unhackable."
             </p>
             <p className="text-body text-muted-foreground">
-              Built on Ethereum, our platform ensures your identity and assets are secured by the most battle-tested blockchain network in the world.
+              The first portable device that transforms your natural signature gesture into military-grade authentication. Combining facial recognition, 360-degree fingerprint scanning, and gesture analysis - all in an elegant pen that fits in your pocket.
             </p>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
-            {points.map((point) => (
+            {features.map((feature) => (
               <div
-                key={point.text}
-                className="flex items-center gap-3 p-4 rounded-xl bg-secondary/50 border border-border"
+                key={feature.title}
+                className="flex flex-col gap-2 p-4 rounded-xl bg-secondary/50 border border-border"
               >
-                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
-                  <point.icon className="w-5 h-5 text-primary" />
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                    <feature.icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <span className="text-sm font-semibold text-foreground">{feature.title}</span>
                 </div>
-                <span className="text-sm font-medium text-foreground">{point.text}</span>
+                <p className="text-xs text-muted-foreground pl-[52px]">{feature.description}</p>
               </div>
             ))}
           </div>
