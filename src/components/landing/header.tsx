@@ -4,25 +4,54 @@ import { Container } from "@/components/layout/container";
 import { useApp } from "@/contexts/app-context";
 import logo from "@/assets/logo-singulai.png";
 import { Menu, X, Languages, Sun, Moon, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const { language, setLanguage, theme, setTheme, t } = useApp();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = (window.scrollY / totalHeight) * 100;
+      setScrollProgress(progress);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    const targetId = href.replace("#", "");
+    const element = document.getElementById(targetId);
+    if (element) {
+      const headerOffset = 80;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.scrollY - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth",
+      });
+    }
+    setMobileMenuOpen(false);
+  };
 
   const navLinks = [
     { labelKey: "nav.features", href: "#features" },
     { labelKey: "nav.howItWorks", href: "#how-it-works" },
     { labelKey: "nav.tokenomics", href: "#tokenomics" },
     { labelKey: "nav.security", href: "#security" },
+    { labelKey: "nav.contact", href: "#contact" },
   ];
 
   const themeOptions = [
@@ -33,6 +62,9 @@ export function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-border">
+      {/* Scroll Progress Bar */}
+      <div className="absolute bottom-0 left-0 h-[2px] bg-primary/50 transition-all duration-150 ease-out" style={{ width: `${scrollProgress}%` }} />
+      
       <Container size="xl">
         <nav className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
@@ -46,7 +78,8 @@ export function Header() {
               <a
                 key={link.labelKey}
                 href={link.href}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                onClick={(e) => scrollToSection(e, link.href)}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               >
                 {t(link.labelKey)}
               </a>
@@ -166,8 +199,8 @@ export function Header() {
                 <a
                   key={link.labelKey}
                   href={link.href}
+                  onClick={(e) => scrollToSection(e, link.href)}
                   className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
-                  onClick={() => setMobileMenuOpen(false)}
                 >
                   {t(link.labelKey)}
                 </a>
