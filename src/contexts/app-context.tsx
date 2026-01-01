@@ -18,6 +18,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.howItWorks": "How It Works",
     "nav.tokenomics": "Tokenomics",
     "nav.security": "Security",
+    "nav.contact": "Contact",
     "nav.dashboard": "Dashboard",
     "nav.launchApp": "Launch App",
     
@@ -93,6 +94,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.howItWorks": "Como Funciona",
     "nav.tokenomics": "Tokenomics",
     "nav.security": "Segurança",
+    "nav.contact": "Contato",
     "nav.dashboard": "Painel",
     "nav.launchApp": "Iniciar App",
     

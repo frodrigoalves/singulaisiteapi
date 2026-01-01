@@ -28,7 +28,7 @@ const features = [
 
 export function WhatIsSingulaiSection() {
   return (
-    <Section spacing="xl" className="relative overflow-hidden">
+    <Section id="singulai-pen" spacing="xl" className="relative overflow-hidden">
       {/* Background accent */}
       <div className="absolute top-1/2 left-0 w-96 h-96 bg-primary/10 rounded-full blur-[128px] -translate-y-1/2" />
       
