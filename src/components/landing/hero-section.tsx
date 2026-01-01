@@ -2,8 +2,11 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/layout/container";
 import { GlassCard } from "@/components/ui/glass-card";
-import { ArrowRight, Shield, Users, Coins, Clock } from "lucide-react";
+import { ArrowRight, Shield, Coins, Clock, Heart, Briefcase, Star } from "lucide-react";
+import { useState, useEffect } from "react";
 import lauraAvatar from "@/assets/avatars/laura.png";
+import leticiaAvatar from "@/assets/avatars/leticia.png";
+import pedroAvatar from "@/assets/avatars/pedro.png";
 
 const stats = [
   { label: "Total Value Locked", value: "$2.4M" },
@@ -12,7 +15,73 @@ const stats = [
   { label: "Legacy Plans Created", value: "3,291" },
 ];
 
+const avatarCards = [
+  {
+    id: 1,
+    avatar: lauraAvatar,
+    name: "Laura.singulai",
+    wallet: "0x7F3a...8B2c",
+    icon: Heart,
+    title: "Family Legacy",
+    titlePt: "Legado Familiar",
+    description: "Preserve precious memories and stories for future generations. Create guided conversations with grandchildren and personalized messages via TimeCapsule.",
+    tag: "Personal",
+    tagColor: "bg-pink-500/20 text-pink-400",
+    tokens: "2,847",
+    nfts: "3",
+    apy: "12%",
+  },
+  {
+    id: 2,
+    avatar: leticiaAvatar,
+    name: "Leticia.singulai",
+    wallet: "0x4D2e...9A1f",
+    icon: Briefcase,
+    title: "Professional Mentor",
+    titlePt: "Mentor Profissional",
+    description: "Transform your expertise into an immortal advisor. Preserve know-how, offer virtual consultations, and monetize your knowledge through AvatarPro.",
+    tag: "Business",
+    tagColor: "bg-blue-500/20 text-blue-400",
+    tokens: "15,420",
+    nfts: "8",
+    apy: "18%",
+  },
+  {
+    id: 3,
+    avatar: pedroAvatar,
+    name: "Pedro.singulai",
+    wallet: "0x9C8b...3E7d",
+    icon: Star,
+    title: "Fan Experience",
+    titlePt: "Experiência Fandom",
+    description: "Connect with your audience forever. Artists can offer exclusive paid sessions, personalized interactions, and unique experiences powered by SGL tokens.",
+    tag: "Creator",
+    tagColor: "bg-yellow-500/20 text-yellow-400",
+    tokens: "42,100",
+    nfts: "24",
+    apy: "25%",
+  },
+];
+
 export function HeroSection() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsAnimating(true);
+      setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % avatarCards.length);
+        setIsAnimating(false);
+      }, 300);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const currentCard = avatarCards[currentIndex];
+  const IconComponent = currentCard.icon;
+
   return (
     <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
       {/* Background */}
@@ -80,45 +149,83 @@ export function HeroSection() {
             </div>
           </div>
 
-          {/* Visual */}
+          {/* Visual - Avatar Carousel */}
           <div className="relative lg:pl-8">
             {/* Main avatar card */}
             <GlassCard variant="glow" size="lg" className="relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-accent to-primary" />
               
-              <div className="flex flex-col items-center text-center space-y-6">
+              <div className={`flex flex-col items-center text-center space-y-6 transition-all duration-300 ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+                {/* Tag */}
+                <div className={`absolute top-6 right-6 px-3 py-1 rounded-full text-xs font-semibold ${currentCard.tagColor}`}>
+                  {currentCard.tag}
+                </div>
+
                 <div className="relative">
                   <div className="w-48 h-48 rounded-3xl overflow-hidden border-2 border-primary/30 shadow-glow">
                     <img
-                      src={lauraAvatar}
-                      alt="SingulAI Avatar"
+                      src={currentCard.avatar}
+                      alt={`${currentCard.name} Avatar`}
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div className="absolute -bottom-2 -right-2 w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-glow">
-                    <Shield className="w-6 h-6 text-white" />
+                    <IconComponent className="w-6 h-6 text-white" />
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <h3 className="text-h4 font-bold text-foreground">Laura.singulai</h3>
-                  <p className="font-mono text-sm text-muted-foreground">0x7F3a...8B2c</p>
+                  <h3 className="text-h4 font-bold text-foreground">{currentCard.name}</h3>
+                  <p className="font-mono text-sm text-muted-foreground">{currentCard.wallet}</p>
+                </div>
+
+                {/* Feature Info */}
+                <div className="space-y-3 px-4">
+                  <h4 className="text-lg font-bold text-foreground flex items-center justify-center gap-2">
+                    <IconComponent className="w-5 h-5 text-primary" />
+                    {currentCard.title}
+                  </h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {currentCard.description}
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4 w-full pt-4 border-t border-border">
                   <div className="text-center">
-                    <p className="text-h4 font-bold text-foreground">2,847</p>
+                    <p className="text-h4 font-bold text-foreground">{currentCard.tokens}</p>
                     <p className="text-caption text-muted-foreground">SGL</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-h4 font-bold text-foreground">3</p>
+                    <p className="text-h4 font-bold text-foreground">{currentCard.nfts}</p>
                     <p className="text-caption text-muted-foreground">NFTs</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-h4 font-bold text-foreground">12%</p>
+                    <p className="text-h4 font-bold text-foreground">{currentCard.apy}</p>
                     <p className="text-caption text-muted-foreground">APY</p>
                   </div>
                 </div>
+              </div>
+
+              {/* Carousel Indicators */}
+              <div className="flex justify-center gap-2 mt-6">
+                {avatarCards.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setIsAnimating(true);
+                      setTimeout(() => {
+                        setCurrentIndex(index);
+                        setIsAnimating(false);
+                      }, 300);
+                    }}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                      index === currentIndex 
+                        ? 'bg-primary w-6' 
+                        : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                    }`}
+                    aria-label={`Go to avatar ${index + 1}`}
+                  />
+                ))}
               </div>
             </GlassCard>
 
