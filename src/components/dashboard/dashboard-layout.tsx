@@ -2,9 +2,8 @@ import { useState } from "react";
 import { Link, useLocation, Outlet } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Container } from "@/components/layout/container";
 import { WalletButton } from "@/components/web3/wallet-button";
-import { NetworkBadge } from "@/components/web3/network-badge";
+import { useApp } from "@/contexts/app-context";
 import logo from "@/assets/logo-singulai.png";
 import {
   LayoutGrid,
@@ -19,24 +18,23 @@ import {
   Bell,
   Search,
   ExternalLink,
-  Moon,
-  Sun,
+  Languages,
 } from "lucide-react";
-
-const navItems = [
-  { label: "Overview", icon: LayoutGrid, href: "/dashboard" },
-  { label: "Tokens", icon: Coins, href: "/dashboard/tokens" },
-  { label: "Staking", icon: TrendingUp, href: "/dashboard/staking" },
-  { label: "Avatar", icon: User, href: "/dashboard/avatar" },
-  { label: "Time Capsule", icon: Clock, href: "/dashboard/timecapsule" },
-  { label: "Digital Legacy", icon: Shield, href: "/dashboard/legacy" },
-  { label: "Settings", icon: Settings, href: "/dashboard/settings" },
-];
 
 export function DashboardLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
   const location = useLocation();
+  const { language, setLanguage, t } = useApp();
+
+  const navItems = [
+    { labelKey: "sidebar.overview", icon: LayoutGrid, href: "/dashboard" },
+    { labelKey: "sidebar.tokens", icon: Coins, href: "/dashboard/tokens" },
+    { labelKey: "sidebar.staking", icon: TrendingUp, href: "/dashboard/staking" },
+    { labelKey: "sidebar.avatar", icon: User, href: "/dashboard/avatar" },
+    { labelKey: "sidebar.timeCapsule", icon: Clock, href: "/dashboard/timecapsule" },
+    { labelKey: "sidebar.legacy", icon: Shield, href: "/dashboard/legacy" },
+    { labelKey: "sidebar.settings", icon: Settings, href: "/dashboard/settings" },
+  ];
 
   // Mock wallet data
   const walletData = {
@@ -93,31 +91,27 @@ export function DashboardLayout() {
               >
                 <item.icon className="w-5 h-5 flex-shrink-0" />
                 {!sidebarCollapsed && (
-                  <span className="text-sm font-medium">{item.label}</span>
+                  <span className="text-sm font-medium">{t(item.labelKey)}</span>
                 )}
               </Link>
             );
           })}
         </nav>
 
-        {/* Bottom actions */}
+        {/* Bottom actions - Language toggle */}
         <div className="p-3 border-t border-sidebar-border space-y-2">
           <Button
             variant="ghost"
             size={sidebarCollapsed ? "icon" : "default"}
-            onClick={() => setDarkMode(!darkMode)}
+            onClick={() => setLanguage(language === "en" ? "pt" : "en")}
             className={cn(
               "text-sidebar-foreground hover:bg-sidebar-accent",
               !sidebarCollapsed && "w-full justify-start"
             )}
           >
-            {darkMode ? (
-              <Sun className="w-5 h-5" />
-            ) : (
-              <Moon className="w-5 h-5" />
-            )}
+            <Languages className="w-5 h-5" />
             {!sidebarCollapsed && (
-              <span className="ml-3 text-sm">{darkMode ? "Light Mode" : "Dark Mode"}</span>
+              <span className="ml-3 text-sm">{language === "en" ? "PT" : "EN"}</span>
             )}
           </Button>
         </div>
@@ -137,7 +131,7 @@ export function DashboardLayout() {
             <div className="flex items-center gap-4">
               {/* Breadcrumb */}
               <nav className="text-sm">
-                <span className="text-muted-foreground">Dashboard</span>
+                <span className="text-muted-foreground">{t("nav.dashboard")}</span>
                 {location.pathname !== "/dashboard" && (
                   <>
                     <span className="text-muted-foreground mx-2">/</span>
