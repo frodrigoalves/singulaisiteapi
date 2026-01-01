@@ -154,9 +154,15 @@ export function Footer() {
             </div>
             
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <p className="text-sm text-muted-foreground">
-                2024 SingulAI Platform. All rights reserved.
-              </p>
+              <div className="flex items-center gap-3">
+                <p className="text-sm text-muted-foreground">
+                  2024 SingulAI Platform. All rights reserved.
+                </p>
+                <span className="text-muted-foreground/30">|</span>
+                <p className="text-xs text-muted-foreground/60">
+                  INPI 942284933
+                </p>
+              </div>
               <div className="flex items-center gap-4">
                 <a 
                   href="https://rodrigo.run" 
