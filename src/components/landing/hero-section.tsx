@@ -70,7 +70,7 @@ export function HeroSection() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-8 border-t border-white/10">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-8 border-t border-border">
               {stats.map((stat) => (
                 <div key={stat.label} className="space-y-1">
                   <p className="text-h4 font-bold text-foreground">{stat.value}</p>
@@ -105,7 +105,7 @@ export function HeroSection() {
                   <p className="font-mono text-sm text-muted-foreground">0x7F3a...8B2c</p>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4 w-full pt-4 border-t border-white/10">
+                <div className="grid grid-cols-3 gap-4 w-full pt-4 border-t border-border">
                   <div className="text-center">
                     <p className="text-h4 font-bold text-foreground">2,847</p>
                     <p className="text-caption text-muted-foreground">SGL</p>

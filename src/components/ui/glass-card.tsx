@@ -7,11 +7,11 @@ const glassCardVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-white/5 border-white/10",
-        elevated: "bg-white/8 border-white/15 shadow-elevated",
-        subtle: "bg-white/3 border-white/5",
+        default: "glass",
+        elevated: "glass shadow-elevated",
+        subtle: "bg-muted/30 border-border/50",
         solid: "bg-card border-border",
-        glow: "bg-white/5 border-primary/30 shadow-glow",
+        glow: "glass border-primary/30 shadow-glow",
       },
       size: {
         sm: "p-4 rounded-xl",

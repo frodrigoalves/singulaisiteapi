@@ -53,10 +53,10 @@ export function SecuritySection() {
           {securityFeatures.map((feature) => (
             <div
               key={feature.title}
-              className="p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-green-500/30 transition-colors group"
+              className="p-6 rounded-2xl bg-muted/50 border border-border hover:border-green-500/30 transition-colors group"
             >
               <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center mb-4 group-hover:bg-green-500/30 transition-colors">
-                <feature.icon className="w-6 h-6 text-green-400" />
+                <feature.icon className="w-6 h-6 text-green-500" />
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
               <p className="text-sm text-muted-foreground">{feature.description}</p>

@@ -32,12 +32,12 @@ export function Header() {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/10">
+    <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-border">
       <Container size="xl">
         <nav className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3">
-            <img src={logo} alt="SingulAI" className="h-8 md:h-10 w-auto" />
+            <img src={logo} alt="SingulAI" className="h-8 md:h-10 w-auto logo-adaptive" />
           </Link>
 
           {/* Desktop Navigation */}
@@ -160,7 +160,7 @@ export function Header() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-white/10">
+          <div className="md:hidden py-4 border-t border-border">
             <div className="flex flex-col gap-4">
               {navLinks.map((link) => (
                 <a
@@ -172,7 +172,7 @@ export function Header() {
                   {t(link.labelKey)}
                 </a>
               ))}
-              <div className="flex flex-col gap-2 pt-4 border-t border-white/10">
+              <div className="flex flex-col gap-2 pt-4 border-t border-border">
                 <Link to="/dashboard">
                   <Button variant="ghost" size="default" className="w-full">
                     {t("nav.dashboard")}

@@ -38,14 +38,14 @@ const socialLinks = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-white/10 bg-background/50">
+    <footer className="border-t border-border bg-card/50">
       <Container size="xl">
         <div className="py-16 md:py-20">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8 lg:gap-12">
             {/* Brand */}
             <div className="col-span-2 md:col-span-1">
               <Link to="/" className="inline-block mb-4">
-                <img src={logo} alt="SingulAI" className="h-8 w-auto" />
+                <img src={logo} alt="SingulAI" className="h-8 w-auto logo-adaptive" />
               </Link>
               <p className="text-sm text-muted-foreground mb-6 max-w-xs">
                 The future of digital identity on blockchain. Secure, decentralized, and truly yours.
@@ -135,7 +135,7 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="py-6 border-t border-white/10">
+        <div className="py-6 border-t border-border">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground">
               2024 SingulAI Platform. All rights reserved.
