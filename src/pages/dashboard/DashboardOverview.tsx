@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { GlassCard } from "@/components/ui/glass-card";
 import { StatCard } from "@/components/ui/stat-card";
 import { Button } from "@/components/ui/button";
-import { AddressDisplay } from "@/components/web3/address-display";
 import {
   Coins,
   Lock,
@@ -27,26 +26,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useWalletAddress, useWalletInfo, useSglBalance, useAvatarBalance } from "@/hooks/use-blockchain";
+import { useUserStaking } from "@/hooks/use-staking";
 import lauraAvatar from "@/assets/avatars/laura.png";
 import petraAvatar from "@/assets/avatars/leticia.png";
 import pedroAvatar from "@/assets/avatars/pedro.png";
+import { Skeleton } from "@/components/ui/skeleton";
 
-// Mock data
-const stats = {
-  balance: "2,847.50",
-  balanceUsd: "$4,271.25",
-  staked: "1,500.00",
-  stakedApy: "12%",
-  rewards: "124.75",
-  avatars: 3,
-};
-
-const avatars = [
+// Fallback avatars for display
+const fallbackAvatars = [
   { id: 1, image: lauraAvatar },
   { id: 2, image: petraAvatar },
   { id: 3, image: pedroAvatar },
 ];
 
+// Mock recent activity (this would come from a tx history endpoint)
 const recentActivity = [
   {
     id: 1,
@@ -74,24 +68,6 @@ const recentActivity = [
     time: "2 days ago",
     status: "completed",
     txHash: "0x3456...7890",
-  },
-  {
-    id: 4,
-    type: "send",
-    description: "Sent SGL",
-    amount: "-100.00 SGL",
-    time: "3 days ago",
-    status: "completed",
-    txHash: "0x4567...8901",
-  },
-  {
-    id: 5,
-    type: "mint",
-    description: "Minted Avatar",
-    amount: "-50.00 SGL",
-    time: "5 days ago",
-    status: "completed",
-    txHash: "0x5678...9012",
   },
 ];
 
@@ -125,7 +101,28 @@ const getStatusIcon = (status: string) => {
   }
 };
 
+function formatBalance(balance: string | undefined): string {
+  if (!balance) return "0.00";
+  const num = parseFloat(balance);
+  return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
 export default function DashboardOverview() {
+  const address = useWalletAddress();
+  const { data: walletInfo, isLoading: walletLoading } = useWalletInfo(address);
+  const { data: sglBalance, isLoading: sglLoading } = useSglBalance(address);
+  const { data: avatarData, isLoading: avatarLoading } = useAvatarBalance(address);
+  const { data: stakingData, isLoading: stakingLoading } = useUserStaking(address);
+
+  const isLoading = walletLoading || sglLoading || avatarLoading || stakingLoading;
+
+  // Calculate values
+  const balance = sglBalance?.formatted || walletInfo?.sglBalance || "0";
+  const balanceUsd = `$${(parseFloat(balance.replace(/,/g, '') || '0') * 1.5).toFixed(2)}`;
+  const staked = stakingData?.totalStaked || "0";
+  const rewards = stakingData?.pendingRewards || "0";
+  const avatarCount = avatarData?.balance || 0;
+
   return (
     <div className="space-y-8">
       {/* Page header */}
@@ -136,50 +133,61 @@ export default function DashboardOverview() {
 
       {/* Stats grid */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          title="SGL Balance"
-          value={stats.balance}
-          subtitle={stats.balanceUsd}
-          icon={Coins}
-          trend={{ value: 12.5, isPositive: true }}
-        />
-        <StatCard
-          title="Staked Amount"
-          value={stats.staked}
-          subtitle={`${stats.stakedApy} APY`}
-          icon={Lock}
-        />
-        <StatCard
-          title="Pending Rewards"
-          value={stats.rewards}
-          icon={Gift}
-          action={
-            <Button variant="default" size="sm" className="w-full">
-              Claim Rewards
-            </Button>
-          }
-        />
-        <StatCard
-          title="NFT Avatars"
-          value={stats.avatars}
-          icon={User}
-          action={
-            <div className="flex -space-x-3">
-              {avatars.map((avatar) => (
-                <div
-                  key={avatar.id}
-                  className="w-10 h-10 rounded-full border-2 border-background overflow-hidden"
-                >
-                  <img
-                    src={avatar.image}
-                    alt={`Avatar ${avatar.id}`}
-                    className="w-full h-full object-cover"
-                  />
+        {isLoading ? (
+          <>
+            <Skeleton className="h-32" />
+            <Skeleton className="h-32" />
+            <Skeleton className="h-32" />
+            <Skeleton className="h-32" />
+          </>
+        ) : (
+          <>
+            <StatCard
+              title="SGL Balance"
+              value={formatBalance(balance)}
+              subtitle={balanceUsd}
+              icon={Coins}
+              trend={{ value: 12.5, isPositive: true }}
+            />
+            <StatCard
+              title="Staked Amount"
+              value={formatBalance(staked)}
+              subtitle="12% APY"
+              icon={Lock}
+            />
+            <StatCard
+              title="Pending Rewards"
+              value={formatBalance(rewards)}
+              icon={Gift}
+              action={
+                <Button variant="default" size="sm" className="w-full">
+                  Claim Rewards
+                </Button>
+              }
+            />
+            <StatCard
+              title="NFT Avatars"
+              value={avatarCount.toString()}
+              icon={User}
+              action={
+                <div className="flex -space-x-3">
+                  {fallbackAvatars.slice(0, Math.min(avatarCount || 3, 3)).map((avatar) => (
+                    <div
+                      key={avatar.id}
+                      className="w-10 h-10 rounded-full border-2 border-background overflow-hidden"
+                    >
+                      <img
+                        src={avatar.image}
+                        alt={`Avatar ${avatar.id}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          }
-        />
+              }
+            />
+          </>
+        )}
       </div>
 
       {/* Quick actions */}

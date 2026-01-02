@@ -1,10 +1,9 @@
 import { GlassCard } from "@/components/ui/glass-card";
 import { StatCard } from "@/components/ui/stat-card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { useState } from "react";
-import { TrendingUp, Lock, Clock, Gift, Coins } from "lucide-react";
+import { TrendingUp, Lock, Clock, Gift } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -13,28 +12,55 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useWalletAddress } from "@/hooks/use-blockchain";
+import { useStakingInfo, useUserStaking } from "@/hooks/use-staking";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const stakingPools = [
-  { period: "30 Days", apy: 5, multiplier: "1x", minStake: 100, maxStake: 10000 },
-  { period: "90 Days", apy: 10, multiplier: "1.5x", minStake: 100, maxStake: 25000 },
-  { period: "180 Days", apy: 15, multiplier: "2x", minStake: 100, maxStake: 50000 },
-  { period: "365 Days", apy: 25, multiplier: "3x", minStake: 100, maxStake: 100000 },
+// Fallback staking pools
+const defaultStakingPools = [
+  { period: "30 Days", apy: 5, multiplier: "1x", minStake: 100, maxStake: 10000, days: 30 },
+  { period: "90 Days", apy: 10, multiplier: "1.5x", minStake: 100, maxStake: 25000, days: 90 },
+  { period: "180 Days", apy: 15, multiplier: "2x", minStake: 100, maxStake: 50000, days: 180 },
+  { period: "365 Days", apy: 25, multiplier: "3x", minStake: 100, maxStake: 100000, days: 365 },
 ];
 
-const activePositions = [
-  { id: 1, amount: "1,000 SGL", period: "90 Days", startDate: "2024-01-01", unlockDate: "2024-04-01", rewards: "25.50 SGL", status: "locked" },
-  { id: 2, amount: "500 SGL", period: "30 Days", startDate: "2024-01-10", unlockDate: "2024-02-10", rewards: "6.25 SGL", status: "unlocked" },
-];
+function formatBalance(balance: string | undefined): string {
+  if (!balance) return "0.00";
+  const num = parseFloat(balance);
+  return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
 
 export default function StakingPage() {
   const [stakeAmount, setStakeAmount] = useState(1000);
   const [selectedPeriod, setSelectedPeriod] = useState(90);
 
+  const address = useWalletAddress();
+  const { data: stakingInfo, isLoading: infoLoading } = useStakingInfo();
+  const { data: userStaking, isLoading: userLoading } = useUserStaking(address);
+
+  const isLoading = infoLoading || userLoading;
+
+  // Use API data or fallback
+  const stakingPools = stakingInfo?.lockPeriods?.map(lp => ({
+    period: `${lp.days} Days`,
+    apy: lp.apy,
+    multiplier: lp.multiplier,
+    minStake: parseInt(stakingInfo.minStake || '100'),
+    maxStake: 100000,
+    days: lp.days,
+  })) || defaultStakingPools;
+
+  const activePositions = userStaking?.positions || [];
+  const totalStaked = userStaking?.totalStaked || "0";
+  const pendingRewards = userStaking?.pendingRewards || "0";
+
   const calculateRewards = (amount: number, days: number) => {
-    const pool = stakingPools.find(p => parseInt(p.period) === days);
+    const pool = stakingPools.find(p => p.days === days);
     if (!pool) return 0;
     return ((amount * pool.apy) / 100 / 365) * days;
   };
+
+  const currentPool = stakingPools.find(p => p.days === selectedPeriod);
 
   return (
     <div className="space-y-8">
@@ -45,25 +71,35 @@ export default function StakingPage() {
 
       {/* Stats */}
       <div className="grid sm:grid-cols-3 gap-6">
-        <StatCard
-          title="Total Staked"
-          value="1,500.00"
-          subtitle="SGL"
-          icon={Lock}
-        />
-        <StatCard
-          title="Current APY"
-          value="12%"
-          subtitle="Weighted Average"
-          icon={TrendingUp}
-          trend={{ value: 2.5, isPositive: true }}
-        />
-        <StatCard
-          title="Next Reward"
-          value="2d 14h"
-          subtitle="Countdown"
-          icon={Clock}
-        />
+        {isLoading ? (
+          <>
+            <Skeleton className="h-32" />
+            <Skeleton className="h-32" />
+            <Skeleton className="h-32" />
+          </>
+        ) : (
+          <>
+            <StatCard
+              title="Total Staked"
+              value={formatBalance(totalStaked)}
+              subtitle="SGL"
+              icon={Lock}
+            />
+            <StatCard
+              title="Current APY"
+              value={`${currentPool?.apy || 12}%`}
+              subtitle="Weighted Average"
+              icon={TrendingUp}
+              trend={{ value: 2.5, isPositive: true }}
+            />
+            <StatCard
+              title="Pending Rewards"
+              value={formatBalance(pendingRewards)}
+              subtitle="SGL"
+              icon={Gift}
+            />
+          </>
+        )}
       </div>
 
       {/* Staking Pools */}
@@ -92,7 +128,12 @@ export default function StakingPage() {
                 <div className="text-xs text-muted-foreground">
                   Min: {pool.minStake} SGL / Max: {pool.maxStake.toLocaleString()} SGL
                 </div>
-                <Button variant="outline" className="w-full" size="sm">
+                <Button 
+                  variant="outline" 
+                  className="w-full" 
+                  size="sm"
+                  onClick={() => setSelectedPeriod(pool.days)}
+                >
                   Stake
                 </Button>
               </div>
@@ -124,14 +165,14 @@ export default function StakingPage() {
             <div>
               <label className="text-sm text-muted-foreground mb-2 block">Lock Period</label>
               <div className="grid grid-cols-4 gap-2">
-                {[30, 90, 180, 365].map((days) => (
+                {stakingPools.map((pool) => (
                   <Button
-                    key={days}
-                    variant={selectedPeriod === days ? "default" : "outline"}
+                    key={pool.days}
+                    variant={selectedPeriod === pool.days ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setSelectedPeriod(days)}
+                    onClick={() => setSelectedPeriod(pool.days)}
                   >
-                    {days}d
+                    {pool.days}d
                   </Button>
                 ))}
               </div>
@@ -151,7 +192,7 @@ export default function StakingPage() {
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">APY</span>
                 <span className="font-semibold text-green-400">
-                  {stakingPools.find(p => parseInt(p.period) === selectedPeriod)?.apy || 0}%
+                  {currentPool?.apy || 0}%
                 </span>
               </div>
               <div className="pt-4 border-t border-white/10">
@@ -176,42 +217,46 @@ export default function StakingPage() {
       <GlassCard variant="default" size="default">
         <h2 className="text-lg font-semibold text-foreground mb-6">Active Positions</h2>
         
-        <Table>
-          <TableHeader>
-            <TableRow className="border-white/10">
-              <TableHead>Amount</TableHead>
-              <TableHead>Period</TableHead>
-              <TableHead>Start Date</TableHead>
-              <TableHead>Unlock Date</TableHead>
-              <TableHead>Rewards</TableHead>
-              <TableHead>Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {activePositions.map((position) => (
-              <TableRow key={position.id} className="border-white/10">
-                <TableCell className="font-semibold text-foreground">{position.amount}</TableCell>
-                <TableCell className="text-muted-foreground">{position.period}</TableCell>
-                <TableCell className="text-muted-foreground">{position.startDate}</TableCell>
-                <TableCell className="text-muted-foreground">{position.unlockDate}</TableCell>
-                <TableCell className="text-green-400 font-mono">{position.rewards}</TableCell>
-                <TableCell>
-                  {position.status === "unlocked" ? (
-                    <Button variant="default" size="sm" className="gap-1">
-                      <Gift className="w-3 h-3" />
-                      Claim
-                    </Button>
-                  ) : (
-                    <Button variant="outline" size="sm" disabled className="gap-1">
-                      <Lock className="w-3 h-3" />
-                      Locked
-                    </Button>
-                  )}
-                </TableCell>
+        {activePositions.length === 0 ? (
+          <p className="text-muted-foreground text-center py-8">No active staking positions</p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow className="border-white/10">
+                <TableHead>Amount</TableHead>
+                <TableHead>Period</TableHead>
+                <TableHead>Start Date</TableHead>
+                <TableHead>Unlock Date</TableHead>
+                <TableHead>Rewards</TableHead>
+                <TableHead>Action</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {activePositions.map((position) => (
+                <TableRow key={position.id} className="border-white/10">
+                  <TableCell className="font-semibold text-foreground">{formatBalance(position.amount)} SGL</TableCell>
+                  <TableCell className="text-muted-foreground">{position.period} Days</TableCell>
+                  <TableCell className="text-muted-foreground">{position.startDate}</TableCell>
+                  <TableCell className="text-muted-foreground">{position.unlockDate}</TableCell>
+                  <TableCell className="text-green-400 font-mono">{formatBalance(position.rewards)} SGL</TableCell>
+                  <TableCell>
+                    {position.status === "unlocked" ? (
+                      <Button variant="default" size="sm" className="gap-1">
+                        <Gift className="w-3 h-3" />
+                        Claim
+                      </Button>
+                    ) : (
+                      <Button variant="outline" size="sm" disabled className="gap-1">
+                        <Lock className="w-3 h-3" />
+                        Locked
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </GlassCard>
     </div>
   );
