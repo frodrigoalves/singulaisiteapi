@@ -1,27 +1,26 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
-import { useWalletAuth } from '@/hooks/use-wallet-auth';
-import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { GlassCard } from '@/components/ui/glass-card';
 import { Separator } from '@/components/ui/separator';
 import { WalletGenerator } from '@/components/auth/wallet-generator';
+import { WalletImport } from '@/components/auth/wallet-import';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Mail, Lock, User, ArrowLeft, Eye, EyeOff, Wallet, Plus, Gift } from 'lucide-react';
+import { Loader2, Mail, Lock, User, ArrowLeft, Eye, EyeOff, Wallet, Plus, Key, Gift } from 'lucide-react';
 import { z } from 'zod';
 import logoSingulai from '@/assets/logo-singulai.png';
 
 const emailSchema = z.string().email('Email inválido');
 const passwordSchema = z.string().min(6, 'Senha deve ter pelo menos 6 caracteres');
 
-type AuthView = 'main' | 'create-wallet';
+type AuthView = 'main' | 'create-wallet' | 'import-wallet';
 
 interface WalletData {
-  mnemonic: string;
+  mnemonic?: string;
   address: string;
   privateKey: string;
 }
@@ -34,12 +33,11 @@ export default function Auth() {
   const [displayName, setDisplayName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isWalletAuthenticating, setIsWalletAuthenticating] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [pendingWalletData, setPendingWalletData] = useState<WalletData | null>(null);
-  
-  const { signIn, signUp, isAuthenticated, loading, session } = useAuth();
-  const { isConnected, isAuthenticating, authenticateWithWallet } = useWalletAuth();
-  const { openConnectModal } = useConnectModal();
+
+  const { signIn, signUp, isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -52,30 +50,19 @@ export default function Auth() {
     }
   }, [isAuthenticated, loading, navigate, from]);
 
-  // Auto-authenticate when wallet connects
-  useEffect(() => {
-    if (isConnected && !isAuthenticated && !isAuthenticating) {
-      authenticateWithWallet().then(({ success }) => {
-        if (success) {
-          navigate(from, { replace: true });
-        }
-      });
-    }
-  }, [isConnected, isAuthenticated, isAuthenticating, authenticateWithWallet, navigate, from]);
-
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {};
-    
+
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) {
       newErrors.email = emailResult.error.errors[0].message;
     }
-    
+
     const passwordResult = passwordSchema.safeParse(password);
     if (!passwordResult.success) {
       newErrors.password = passwordResult.error.errors[0].message;
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -93,7 +80,7 @@ export default function Auth() {
 
       if (data?.success) {
         toast({
-          title: '🎉 Airdrop Recebido!',
+          title: ' Airdrop Recebido!',
           description: data.message,
         });
       }
@@ -104,15 +91,15 @@ export default function Auth() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     setIsSubmitting(true);
 
     try {
       if (isLogin) {
         const { error } = await signIn(email, password);
-        
+
         if (error) {
           if (error.message.includes('Invalid login credentials')) {
             toast({
@@ -129,14 +116,14 @@ export default function Auth() {
           }
           return;
         }
-        
+
         toast({
           title: 'Bem-vindo!',
           description: 'Login realizado com sucesso.',
         });
       } else {
         const { data, error } = await signUp(email, password, displayName);
-        
+
         if (error) {
           if (error.message.includes('User already registered')) {
             toast({
@@ -153,7 +140,7 @@ export default function Auth() {
           }
           return;
         }
-        
+
         toast({
           title: 'Conta criada!',
           description: 'Sua conta foi criada com sucesso.',
@@ -175,9 +162,76 @@ export default function Auth() {
     }
   };
 
-  const handleWalletConnect = () => {
-    if (openConnectModal) {
-      openConnectModal();
+  // Autenticação via chave privada (importação de wallet)
+  const handleWalletImported = async (walletData: { address: string; privateKey: string }) => {
+    setIsWalletAuthenticating(true);
+
+    try {
+      // Usar endereço da wallet como email (para compatibilidade com Supabase)
+      const walletEmail = `${walletData.address.toLowerCase()}@wallet.singulai.site`;
+      // Usar parte da chave privada como senha (hash local)
+      const walletPassword = walletData.privateKey.slice(2, 66);
+
+      // Tentar fazer login primeiro
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: walletEmail,
+        password: walletPassword,
+      });
+
+      if (signInData.session) {
+        // Atualizar profile com endereço da wallet
+        await supabase
+          .from('profiles')
+          .update({ wallet_address: walletData.address })
+          .eq('user_id', signInData.user?.id);
+
+        toast({
+          title: 'Bem-vindo!',
+          description: 'Conectado com sucesso.',
+        });
+        navigate(from, { replace: true });
+        return;
+      }
+
+      // Se login falhou, criar conta
+      if (signInError) {
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: walletEmail,
+          password: walletPassword,
+          options: {
+            emailRedirectTo: `${window.location.origin}/dashboard`,
+            data: {
+              display_name: `${walletData.address.slice(0, 6)}...${walletData.address.slice(-4)}`,
+              wallet_address: walletData.address,
+            },
+          },
+        });
+
+        if (signUpError) {
+          throw signUpError;
+        }
+
+        if (signUpData.session) {
+          // Processar airdrop para nova conta
+          await processAirdrop(walletData.address);
+
+          toast({
+            title: 'Conta criada!',
+            description: 'Bem-vindo ao SingulAI.',
+          });
+          navigate(from, { replace: true });
+          return;
+        }
+      }
+    } catch (error: any) {
+      console.error('Wallet auth error:', error);
+      toast({
+        title: 'Erro na autenticação',
+        description: error.message || 'Falha ao autenticar com wallet.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsWalletAuthenticating(false);
     }
   };
 
@@ -186,20 +240,17 @@ export default function Auth() {
     setIsLogin(false);
     setDisplayName(`${walletData.address.slice(0, 6)}...${walletData.address.slice(-4)}`);
     setView('main');
-    
+
     toast({
       title: 'Wallet pronta!',
       description: 'Complete seu cadastro para receber 10.000 SGL de boas-vindas.',
     });
   };
 
-  if (loading || isAuthenticating) {
+  if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        {isAuthenticating && (
-          <p className="text-muted-foreground">Autenticando com wallet...</p>
-        )}
       </div>
     );
   }
@@ -208,7 +259,7 @@ export default function Auth() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
       {/* Background gradient */}
       <div className="fixed inset-0 bg-gradient-radial from-primary/10 via-background to-background pointer-events-none" />
-      
+
       {/* Back to home link */}
       <Link
         to="/"
@@ -229,6 +280,12 @@ export default function Auth() {
             <WalletGenerator
               onWalletCreated={handleWalletCreated}
               onBack={() => setView('main')}
+            />
+          ) : view === 'import-wallet' ? (
+            <WalletImport
+              onWalletImported={handleWalletImported}
+              onBack={() => setView('main')}
+              isLoading={isWalletAuthenticating}
             />
           ) : (
             <>
@@ -277,18 +334,17 @@ export default function Auth() {
                 </div>
               )}
 
-              {/* Wallet Connect Buttons */}
+              {/* Wallet Buttons - SIMPLIFICADO */}
               <div className="space-y-3 mb-6">
                 <Button
                   type="button"
                   variant="outline"
                   size="lg"
                   className="w-full gap-3 h-14 text-base"
-                  onClick={handleWalletConnect}
-                  disabled={isAuthenticating}
+                  onClick={() => setView('import-wallet')}
                 >
-                  <Wallet className="w-5 h-5" />
-                  Conectar Wallet Existente
+                  <Key className="w-5 h-5" />
+                  Conectar com Chave Privada
                 </Button>
 
                 <Button
@@ -356,7 +412,7 @@ export default function Auth() {
                     <Input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
-                      placeholder="••••••••"
+                      placeholder=""
                       value={password}
                       onChange={(e) => {
                         setPassword(e.target.value);
