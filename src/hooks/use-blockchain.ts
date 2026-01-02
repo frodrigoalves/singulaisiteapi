@@ -1,11 +1,66 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './use-auth';
+import { useAccount } from 'wagmi';
 
-// Get the connected wallet address (from localStorage or context)
+// Get the connected wallet address (from Web3 wallet or Supabase profile)
 export function useWalletAddress() {
-  // For now, try to get from localStorage
-  const address = localStorage.getItem('walletAddress');
-  return address || null;
+  const { address: web3Address } = useAccount();
+  const { user } = useAuth();
+
+  // Try Web3 wallet first
+  if (web3Address) {
+    return web3Address;
+  }
+
+  // Fallback to localStorage (for legacy support)
+  const storedAddress = localStorage.getItem('walletAddress');
+  return storedAddress || null;
+}
+
+// Get user profile with wallet address from Supabase
+export function useUserProfile() {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+}
+
+// Get user's airdrop status
+export function useUserAirdrop() {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: ['airdrop', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      
+      const { data, error } = await supabase
+        .from('airdrops')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
 }
 
 // Blockchain health check

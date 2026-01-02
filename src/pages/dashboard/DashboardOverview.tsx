@@ -26,7 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useWalletAddress, useWalletInfo, useSglBalance, useAvatarBalance } from "@/hooks/use-blockchain";
+import { useWalletAddress, useWalletInfo, useSglBalance, useAvatarBalance, useUserProfile, useUserAirdrop } from "@/hooks/use-blockchain";
 import { useUserStaking } from "@/hooks/use-staking";
 import lauraAvatar from "@/assets/avatars/laura.png";
 import petraAvatar from "@/assets/avatars/leticia.png";
@@ -109,16 +109,34 @@ function formatBalance(balance: string | undefined): string {
 }
 
 export default function DashboardOverview() {
-  const address = useWalletAddress();
+  const web3Address = useWalletAddress();
+  const { data: profile, isLoading: profileLoading } = useUserProfile();
+  const { data: airdrops, isLoading: airdropLoading } = useUserAirdrop();
+  
+  // Use profile wallet address if web3 is not connected
+  const address = web3Address || profile?.wallet_address || null;
+  
   const { data: walletInfo, isLoading: walletLoading } = useWalletInfo(address);
   const { data: sglBalance, isLoading: sglLoading } = useSglBalance(address);
   const { data: avatarData, isLoading: avatarLoading } = useAvatarBalance(address);
   const { data: stakingData, isLoading: stakingLoading } = useUserStaking(address);
 
-  const isLoading = walletLoading || sglLoading || avatarLoading || stakingLoading;
+  const isLoading = walletLoading || sglLoading || avatarLoading || stakingLoading || profileLoading || airdropLoading;
+
+  // Calculate airdrop total
+  const airdropTotal = airdrops?.reduce((acc, airdrop) => {
+    if (airdrop.status === 'completed' || airdrop.status === 'pending') {
+      return acc + Number(airdrop.amount);
+    }
+    return acc;
+  }, 0) || 0;
 
   // Calculate values
-  const balance = sglBalance?.formatted || walletInfo?.sglBalance || "0";
+  const apiBalance = sglBalance?.formatted || walletInfo?.sglBalance || "0";
+  // Add airdrop balance to show pending tokens
+  const balance = airdropTotal > 0 && parseFloat(apiBalance) === 0 
+    ? airdropTotal.toString() 
+    : apiBalance;
   const balanceUsd = `$${(parseFloat(balance.replace(/,/g, '') || '0') * 1.5).toFixed(2)}`;
   const staked = stakingData?.totalStaked || "0";
   const rewards = stakingData?.pendingRewards || "0";
@@ -131,6 +149,52 @@ export default function DashboardOverview() {
         <h1 className="text-h3 font-bold text-foreground">Overview</h1>
         <p className="text-muted-foreground mt-1">Welcome back to your SingulAI dashboard</p>
       </div>
+
+      {/* Wallet Address Display */}
+      {address && (
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 border border-border/50">
+          <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+            <Coins className="w-4 h-4 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-muted-foreground">Wallet Conectada</p>
+            <p className="text-sm font-mono text-foreground truncate">{address}</p>
+          </div>
+          <a
+            href={`https://sepolia.etherscan.io/address/${address}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ExternalLink className="w-4 h-4" />
+          </a>
+        </div>
+      )}
+
+      {/* Airdrop Banner */}
+      {airdropTotal > 0 && (
+        <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-xl p-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
+              <Gift className="w-6 h-6 text-green-400" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-foreground">
+                🎉 Airdrop de Boas-vindas!
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Você recebeu <span className="font-bold text-green-400">{airdropTotal.toLocaleString()} SGL</span> tokens na rede Sepolia
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">Status</p>
+              <p className="text-sm font-medium text-green-400">
+                {airdrops?.[0]?.status === 'completed' ? 'Confirmado' : 'Pendente'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stats grid */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -146,9 +210,9 @@ export default function DashboardOverview() {
             <StatCard
               title="SGL Balance"
               value={formatBalance(balance)}
-              subtitle={balanceUsd}
+              subtitle={airdropTotal > 0 ? `${balanceUsd} • Inclui ${airdropTotal.toLocaleString()} SGL airdrop` : balanceUsd}
               icon={Coins}
-              trend={{ value: 12.5, isPositive: true }}
+              trend={airdropTotal > 0 ? { value: 100, isPositive: true } : { value: 12.5, isPositive: true }}
             />
             <StatCard
               title="Staked Amount"
