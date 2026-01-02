@@ -82,7 +82,7 @@ export function HeroSection() {
   const IconComponent = currentCard.icon;
 
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden">
+    <section id="hero" className="relative min-h-screen flex items-center pt-20 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-muted/20" />
@@ -97,8 +97,8 @@ export function HeroSection() {
         />
       </div>
 
-      <Container size="xl" className="pt-20 pb-8 md:py-32">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+      <Container size="xl" className="py-8 md:py-24">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           
           {/* Left Column - Content */}
           <div className="space-y-6 md:space-y-8">
@@ -110,10 +110,10 @@ export function HeroSection() {
             </div>
             
             {/* Mobile Layout: Title + Avatar side by side */}
-            <div className="flex items-start gap-6 md:block">
+            <div className="flex items-start gap-4 md:gap-6 lg:block">
               {/* Title */}
-              <div className="flex-1">
-                <h1 className="font-heading text-[28px] leading-[1.08] sm:text-4xl md:text-h1 lg:text-display text-foreground md:leading-[1.05] tracking-[-0.02em] md:tracking-[-0.03em]">
+              <div className="flex-1 min-w-0">
+                <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-foreground leading-[1.1] tracking-[-0.02em]">
                   <span className="block font-semibold">{t("hero.title1")}</span>
                   <span className="block font-semibold text-gradient">{t("hero.title2")}</span>
                   <span className="block font-semibold text-muted-foreground">{t("hero.title3")}</span>
@@ -121,12 +121,12 @@ export function HeroSection() {
               </div>
 
               {/* Mobile Avatar Card */}
-              <div className="flex-shrink-0 md:hidden">
+              <div className="flex-shrink-0 lg:hidden">
                 <div className={`transition-all duration-300 ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
-                  <GlassCard size="sm" className="p-3 w-[104px]">
+                  <GlassCard size="sm" className="p-3 w-24">
                     <div className="flex flex-col items-center">
                       <div className="relative mb-2">
-                        <div className="w-16 h-16 rounded-xl overflow-hidden border border-primary/30">
+                        <div className="w-14 h-14 rounded-xl overflow-hidden border border-primary/30">
                           <img
                             src={currentCard.avatar}
                             alt={`${currentCard.name} Avatar`}
@@ -137,8 +137,8 @@ export function HeroSection() {
                           <IconComponent className="w-2.5 h-2.5 text-white" />
                         </div>
                       </div>
-                      <p className="text-[11px] font-medium text-foreground truncate w-full text-center">{currentCard.name.split('.')[0]}</p>
-                      <p className="text-[9px] text-muted-foreground">.singulai</p>
+                      <p className="text-[10px] font-medium text-foreground truncate w-full text-center">{currentCard.name.split('.')[0]}</p>
+                      <p className="text-[8px] text-muted-foreground">.singulai</p>
                       
                       {/* Indicators */}
                       <div className="flex justify-center gap-1 mt-2">
@@ -168,7 +168,7 @@ export function HeroSection() {
             </div>
 
             {/* Description */}
-            <p className="text-sm md:text-body-lg text-muted-foreground max-w-xl leading-relaxed">
+            <p className="text-sm md:text-base lg:text-lg text-muted-foreground max-w-xl leading-relaxed">
               {t("hero.description")}
             </p>
 
@@ -187,12 +187,12 @@ export function HeroSection() {
               </a>
             </div>
 
-            {/* Stats - 8pt grid aligned */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-4 md:gap-6 pt-6 md:pt-8 border-t border-border">
+            {/* Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 pt-6 md:pt-8 border-t border-border">
               {stats.map((stat) => (
                 <div key={stat.label}>
-                  <p className="text-xl md:text-h4 font-bold text-foreground leading-tight">{stat.value}</p>
-                  <p className="text-[11px] md:text-caption text-muted-foreground mt-0.5">{stat.label}</p>
+                  <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground leading-tight">{stat.value}</p>
+                  <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5">{stat.label}</p>
                 </div>
               ))}
             </div>
@@ -200,7 +200,7 @@ export function HeroSection() {
 
 
           {/* Right Column - Desktop Avatar Carousel */}
-          <div className="relative lg:pl-8 hidden md:block">
+          <div className="relative hidden lg:block">
             <GlassCard variant="glow" size="lg" className="relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-accent to-primary" />
               
@@ -211,46 +211,46 @@ export function HeroSection() {
                 </div>
 
                 <div className="relative">
-                  <div className="w-48 h-48 rounded-3xl overflow-hidden border-2 border-primary/30 shadow-glow">
+                  <div className="w-40 h-40 rounded-3xl overflow-hidden border-2 border-primary/30 shadow-glow">
                     <img
                       src={currentCard.avatar}
                       alt={`${currentCard.name} Avatar`}
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <div className="absolute -bottom-2 -right-2 w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-glow">
-                    <IconComponent className="w-6 h-6 text-white" />
+                  <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-glow">
+                    <IconComponent className="w-5 h-5 text-white" />
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <h3 className="text-h4 font-bold text-foreground">{currentCard.name}</h3>
-                  <p className="font-mono text-sm text-muted-foreground">{currentCard.wallet}</p>
+                  <h3 className="text-lg font-bold text-foreground">{currentCard.name}</h3>
+                  <p className="font-mono text-xs text-muted-foreground">{currentCard.wallet}</p>
                 </div>
 
                 {/* Feature Info */}
-                <div className="space-y-3 px-4">
-                  <h4 className="text-lg font-bold text-foreground flex items-center justify-center gap-2">
-                    <IconComponent className="w-5 h-5 text-primary" />
+                <div className="space-y-2 px-4">
+                  <h4 className="text-base font-bold text-foreground flex items-center justify-center gap-2">
+                    <IconComponent className="w-4 h-4 text-primary" />
                     {currentCard.title}
                   </h4>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+                  <p className="text-xs text-muted-foreground leading-relaxed">
                     {currentCard.description}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4 w-full pt-4 border-t border-border">
                   <div className="text-center">
-                    <p className="text-h4 font-bold text-foreground">{currentCard.tokens}</p>
-                    <p className="text-caption text-muted-foreground">SGL</p>
+                    <p className="text-lg font-bold text-foreground">{currentCard.tokens}</p>
+                    <p className="text-[10px] text-muted-foreground">SGL</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-h4 font-bold text-foreground">{currentCard.nfts}</p>
-                    <p className="text-caption text-muted-foreground">NFTs</p>
+                    <p className="text-lg font-bold text-foreground">{currentCard.nfts}</p>
+                    <p className="text-[10px] text-muted-foreground">NFTs</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-h4 font-bold text-foreground">{currentCard.apy}</p>
-                    <p className="text-caption text-muted-foreground">APY</p>
+                    <p className="text-lg font-bold text-foreground">{currentCard.apy}</p>
+                    <p className="text-[10px] text-muted-foreground">APY</p>
                   </div>
                 </div>
               </div>
@@ -279,26 +279,26 @@ export function HeroSection() {
             </GlassCard>
 
             {/* Floating elements */}
-            <div className="absolute -top-4 -left-4 animate-float hidden lg:block" style={{ animationDelay: "0.5s" }}>
+            <div className="absolute -top-4 -left-4 animate-float" style={{ animationDelay: "0.5s" }}>
               <GlassCard size="sm" className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
-                  <Coins className="w-5 h-5 text-green-500" />
+                <div className="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
+                  <Coins className="w-4 h-4 text-green-500" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-foreground">+124 SGL</p>
-                  <p className="text-xs text-muted-foreground">{t("hero.stakingReward")}</p>
+                  <p className="text-xs font-semibold text-foreground">+124 SGL</p>
+                  <p className="text-[10px] text-muted-foreground">{t("hero.stakingReward")}</p>
                 </div>
               </GlassCard>
             </div>
 
-            <div className="absolute -bottom-4 -right-4 animate-float hidden lg:block" style={{ animationDelay: "1s" }}>
+            <div className="absolute -bottom-4 -right-4 animate-float" style={{ animationDelay: "1s" }}>
               <GlassCard size="sm" className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-primary" />
+                <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <Clock className="w-4 h-4 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-foreground">{t("hero.timeCapsule")}</p>
-                  <p className="text-xs text-muted-foreground">{t("hero.opensIn")}</p>
+                  <p className="text-xs font-semibold text-foreground">{t("hero.timeCapsule")}</p>
+                  <p className="text-[10px] text-muted-foreground">{t("hero.opensIn")}</p>
                 </div>
               </GlassCard>
             </div>
