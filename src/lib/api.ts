@@ -1,5 +1,7 @@
 // API Client for SingulAI Backend
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.singulai.site';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://72.60.147.56:3004/api/v1';
+const API_TIMEOUT = Number(import.meta.env.VITE_API_TIMEOUT) || 30000;
+const API_RETRIES = Number(import.meta.env.VITE_API_RETRIES) || 3;
 
 class ApiClient {
   private baseUrl: string;
@@ -8,28 +10,45 @@ class ApiClient {
     this.baseUrl = baseUrl;
   }
 
-  private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  private async request<T>(endpoint: string, options?: RequestInit, retries = API_RETRIES): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
     
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers,
-      },
-    });
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+          ...options?.headers,
+        },
+      });
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Request failed' }));
-      throw new Error(error.message || `HTTP ${response.status}`);
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: 'Request failed' }));
+        throw new Error(error.message || `HTTP ${response.status}`);
+      }
+
+      return response.json();
+    } catch (error) {
+      clearTimeout(timeoutId);
+      
+      if (retries > 0 && (error instanceof TypeError || (error as Error).name === 'AbortError')) {
+        console.log(`Retrying request to ${endpoint}, ${retries} attempts left`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return this.request<T>(endpoint, options, retries - 1);
+      }
+      
+      throw error;
     }
-
-    return response.json();
   }
 
   // Blockchain endpoints
   async getBlockchainHealth() {
-    return this.request<{ status: string; timestamp: string }>('/api/v1/blockchain/health');
+    return this.request<{ status: string; timestamp: string }>('/blockchain/health');
   }
 
   async getBlockchainStatus() {
@@ -38,7 +57,7 @@ class ApiClient {
       chainId: number;
       blockNumber: number;
       gasPrice: string;
-    }>('/api/v1/blockchain/status');
+    }>('/blockchain/status');
   }
 
   async getWalletInfo(address: string) {
@@ -46,7 +65,7 @@ class ApiClient {
       address: string;
       ethBalance: string;
       sglBalance: string;
-    }>(`/api/v1/blockchain/wallet/${address}`);
+    }>(`/blockchain/wallet/${address}`);
   }
 
   async getSglInfo() {
@@ -56,7 +75,7 @@ class ApiClient {
       address: string;
       totalSupply: string;
       decimals: number;
-    }>('/api/v1/blockchain/sgl/info');
+    }>('/blockchain/sgl/info');
   }
 
   async getSglBalance(address: string) {
@@ -64,7 +83,7 @@ class ApiClient {
       address: string;
       balance: string;
       formatted: string;
-    }>(`/api/v1/blockchain/sgl/balance/${address}`);
+    }>(`/blockchain/sgl/balance/${address}`);
   }
 
   async transferSgl(data: { from: string; to: string; amount: string; privateKey?: string }) {
@@ -73,21 +92,21 @@ class ApiClient {
       from: string;
       to: string;
       amount: string;
-    }>('/api/v1/blockchain/sgl/transfer', {
+    }>('/blockchain/sgl/transfer', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
   async mintSgl(data: { to: string; amount: string }) {
-    return this.request<{ txHash: string; to: string; amount: string }>('/api/v1/blockchain/sgl/mint', {
+    return this.request<{ txHash: string; to: string; amount: string }>('/blockchain/sgl/mint', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
   async airdropSgl(data: { to: string; amount: string }) {
-    return this.request<{ txHash: string; to: string; amount: string }>('/api/v1/blockchain/sgl/airdrop', {
+    return this.request<{ txHash: string; to: string; amount: string }>('/blockchain/sgl/airdrop', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -98,11 +117,11 @@ class ApiClient {
       address: string;
       balance: number;
       tokenIds: number[];
-    }>(`/api/v1/blockchain/avatar/balance/${address}`);
+    }>(`/blockchain/avatar/balance/${address}`);
   }
 
   async mintAvatar(data: { to: string; uri: string }) {
-    return this.request<{ txHash: string; to: string; tokenId: number }>('/api/v1/blockchain/avatar/mint', {
+    return this.request<{ txHash: string; to: string; tokenId: number }>('/blockchain/avatar/mint', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -115,7 +134,7 @@ class ApiClient {
       rewardRate: string;
       minStake: string;
       lockPeriods: { days: number; apy: number; multiplier: string }[];
-    }>('/api/v1/staking/info');
+    }>('/staking/info');
   }
 
   async getUserStaking(address: string) {
@@ -132,13 +151,13 @@ class ApiClient {
         rewards: string;
         status: 'locked' | 'unlocked';
       }[];
-    }>(`/api/v1/staking/user/${address}`);
+    }>(`/staking/user/${address}`);
   }
 
   async getStakingLeaderboard() {
     return this.request<{
       leaderboard: { rank: number; address: string; staked: string }[];
-    }>('/api/v1/staking/leaderboard');
+    }>('/staking/leaderboard');
   }
 
   // Time Capsule endpoints
@@ -146,7 +165,7 @@ class ApiClient {
     return this.request<{
       totalCapsules: number;
       activeCapsules: number;
-    }>('/api/v1/timecapsule/info');
+    }>('/timecapsule/info');
   }
 
   async getUserCapsules(address: string) {
@@ -159,7 +178,7 @@ class ApiClient {
         recipient: string;
         daysLeft: number;
       }[];
-    }>(`/api/v1/timecapsule/user/${address}`);
+    }>(`/timecapsule/user/${address}`);
   }
 
   async getCapsuleById(id: number) {
@@ -168,7 +187,7 @@ class ApiClient {
       status: string;
       message?: string;
       unlockDate: string;
-    }>(`/api/v1/timecapsule/capsule/${id}`);
+    }>(`/timecapsule/capsule/${id}`);
   }
 
   // Legacy endpoints
@@ -176,7 +195,7 @@ class ApiClient {
     return this.request<{
       totalPlans: number;
       activePlans: number;
-    }>('/api/v1/legacy/info');
+    }>('/legacy/info');
   }
 
   async getUserLegacy(address: string) {
@@ -195,7 +214,7 @@ class ApiClient {
         allocation: string;
         status: 'pending' | 'active';
       }[];
-    }>(`/api/v1/legacy/user/${address}`);
+    }>(`/legacy/user/${address}`);
   }
 
   async getLegacyById(id: number) {
@@ -204,7 +223,7 @@ class ApiClient {
       beneficiaries: { address: string; allocation: number }[];
       inactivityPeriod: number;
       status: string;
-    }>(`/api/v1/legacy/legacy/${id}`);
+    }>(`/legacy/legacy/${id}`);
   }
 }
 
