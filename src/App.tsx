@@ -16,6 +16,7 @@ import TimeCapsulePage from "./pages/dashboard/TimeCapsulePage";
 import LegacyPage from "./pages/dashboard/LegacyPage";
 import SettingsPage from "./pages/dashboard/SettingsPage";
 import NotFound from "./pages/NotFound";
+import Roadmap from "./pages/Roadmap";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/roadmap" element={<Roadmap />} />
             <Route path="/connect" element={<Connect />} />
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<DashboardOverview />} />

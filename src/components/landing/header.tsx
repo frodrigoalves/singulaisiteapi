@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Container } from "@/components/layout/container";
 import { useApp } from "@/contexts/app-context";
 import logo from "@/assets/logo-singulai.png";
-import { Menu, X, Languages, Sun, Moon, Sparkles } from "lucide-react";
+import { Menu, X, Languages, Sun, Moon, Sparkles, GitBranch } from "lucide-react";
 import { useState, useEffect } from "react";
 import {
   DropdownMenu,
@@ -142,6 +142,12 @@ export function Header() {
 
             <div className="w-px h-6 bg-border mx-2" />
 
+            <Link to="/roadmap">
+              <Button variant="ghost" size="default" className="gap-2">
+                <GitBranch className="w-4 h-4" />
+                {t("nav.roadmap")}
+              </Button>
+            </Link>
             <Link to="/dashboard">
               <Button variant="ghost" size="default">
                 {t("nav.dashboard")}
@@ -206,6 +212,12 @@ export function Header() {
                 </a>
               ))}
               <div className="flex flex-col gap-2 pt-4 border-t border-border">
+                <Link to="/roadmap">
+                  <Button variant="ghost" size="default" className="w-full gap-2">
+                    <GitBranch className="w-4 h-4" />
+                    {t("nav.roadmap")}
+                  </Button>
+                </Link>
                 <Link to="/dashboard">
                   <Button variant="ghost" size="default" className="w-full">
                     {t("nav.dashboard")}
