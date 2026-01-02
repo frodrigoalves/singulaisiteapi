@@ -82,7 +82,7 @@ export function HeroSection() {
   const IconComponent = currentCard.icon;
 
   return (
-    <section className="relative min-h-screen flex items-center pt-16 md:pt-20 overflow-hidden">
+    <section className="relative min-h-screen flex items-center pt-20 md:pt-20 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-muted/20" />
@@ -97,48 +97,48 @@ export function HeroSection() {
         />
       </div>
 
-      <Container size="xl" className="py-8 md:py-32">
-        <div className="grid lg:grid-cols-2 gap-6 lg:gap-16 items-center">
+      <Container size="xl" className="py-6 md:py-32">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           {/* Content + Mobile Avatar */}
-          <div className="space-y-4 md:space-y-8">
+          <div className="space-y-5 md:space-y-8">
             {/* Mobile: Title + Avatar side by side */}
-            <div className="flex gap-4 md:block">
+            <div className="flex gap-5 md:block items-start">
               {/* Text content */}
-              <div className="flex-1 space-y-3 md:space-y-6">
-                <div className="inline-flex items-center gap-2 px-2 py-1 md:px-4 md:py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] md:text-sm font-medium">
-                  <Shield className="w-3 h-3 md:w-4 md:h-4" />
+              <div className="flex-1 space-y-4 md:space-y-6">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs md:text-sm font-medium">
+                  <Shield className="w-3.5 h-3.5 md:w-4 md:h-4" />
                   {t("hero.badge")}
                 </div>
                 
-                <h1 className="font-heading text-2xl sm:text-4xl md:text-h1 lg:text-display text-foreground leading-[1.05] tracking-[-0.03em]">
+                <h1 className="font-heading text-[1.75rem] leading-[1.1] sm:text-4xl md:text-h1 lg:text-display text-foreground md:leading-[1.05] tracking-[-0.02em] md:tracking-[-0.03em]">
                   <span className="block font-semibold">{t("hero.title1")}</span>
                   <span className="block font-semibold text-gradient">{t("hero.title2")}</span>
                   <span className="block font-semibold text-muted-foreground">{t("hero.title3")}</span>
                 </h1>
                 
-                <p className="text-xs md:text-body-lg text-muted-foreground max-w-xl hidden md:block">
+                <p className="text-sm md:text-body-lg text-muted-foreground max-w-xl hidden md:block leading-relaxed">
                   {t("hero.description")}
                 </p>
               </div>
 
               {/* Mobile Avatar - inline with title */}
-              <div className="flex-shrink-0 md:hidden">
+              <div className="flex-shrink-0 md:hidden pt-1">
                 <div className={`transition-all duration-300 ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
                   <div className="relative">
-                    <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-primary/30 shadow-glow">
+                    <div className="w-[88px] h-[88px] rounded-2xl overflow-hidden border-2 border-primary/30 shadow-glow">
                       <img
                         src={currentCard.avatar}
                         alt={`${currentCard.name} Avatar`}
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                    <div className="absolute -bottom-1.5 -right-1.5 w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
                       <IconComponent className="w-4 h-4 text-white" />
                     </div>
                   </div>
-                  <p className="text-[10px] font-medium text-center text-foreground mt-2 truncate w-24">{currentCard.name}</p>
+                  <p className="text-xs font-medium text-center text-foreground mt-2.5 truncate w-[88px]">{currentCard.name}</p>
                   {/* Indicators */}
-                  <div className="flex justify-center gap-1 mt-1">
+                  <div className="flex justify-center gap-1.5 mt-2">
                     {avatarCards.map((_, index) => (
                       <button
                         key={index}
@@ -149,10 +149,10 @@ export function HeroSection() {
                             setIsAnimating(false);
                           }, 300);
                         }}
-                        className={`w-1 h-1 rounded-full transition-all duration-300 ${
+                        className={`h-1.5 rounded-full transition-all duration-300 ${
                           index === currentIndex 
-                            ? 'bg-primary w-2' 
-                            : 'bg-muted-foreground/30'
+                            ? 'bg-primary w-4' 
+                            : 'bg-muted-foreground/30 w-1.5'
                         }`}
                         aria-label={`Go to avatar ${index + 1}`}
                       />
@@ -163,34 +163,35 @@ export function HeroSection() {
             </div>
 
             {/* Mobile description */}
-            <p className="text-xs text-muted-foreground max-w-xl md:hidden">
+            <p className="text-sm text-muted-foreground max-w-xl md:hidden leading-relaxed">
               {t("hero.description")}
             </p>
 
-            <div className="flex flex-wrap gap-2 md:gap-4">
+            <div className="flex flex-wrap gap-3 md:gap-4">
               <Link to="/connect">
-                <Button variant="hero" size="default" className="text-sm md:text-base">
+                <Button variant="hero" size="default" className="text-sm md:text-base h-11 md:h-12 px-5 md:px-6">
                   {t("hero.launchApp")}
                   <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
                 </Button>
               </Link>
               <a href="#whitepaper">
-                <Button variant="hero-outline" size="default" className="text-sm md:text-base">
+                <Button variant="hero-outline" size="default" className="text-sm md:text-base h-11 md:h-12 px-5 md:px-6">
                   {t("hero.whitepaper")}
                 </Button>
               </a>
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 pt-4 md:pt-8 border-t border-border">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-4 pt-5 md:pt-8 border-t border-border">
               {stats.map((stat) => (
-                <div key={stat.label} className="space-y-0.5 md:space-y-1">
-                  <p className="text-lg md:text-h4 font-bold text-foreground">{stat.value}</p>
+                <div key={stat.label} className="space-y-1 md:space-y-1">
+                  <p className="text-xl md:text-h4 font-bold text-foreground">{stat.value}</p>
                   <p className="text-xs md:text-caption text-muted-foreground">{stat.label}</p>
                 </div>
               ))}
             </div>
           </div>
+
 
           {/* Visual - Avatar Carousel - Desktop */}
           <div className="relative lg:pl-8 hidden md:block">
