@@ -1,15 +1,23 @@
-﻿import { ReactNode, createContext, useContext, useState } from 'react';
+﻿import { ReactNode, createContext, useContext, useState, useEffect } from 'react';
+import { createPublicClient, http } from 'viem';
+import { base, baseSepolia } from 'viem/chains';
+
+// Configuracao da rede (Base Mainnet para producao)
+const chain = import.meta.env.PROD ? base : baseSepolia;
+
+export const publicClient = createPublicClient({
+  chain,
+  transport: http(),
+});
 
 interface Web3ContextType {
-  walletAddress: string | null;
-  setWalletAddress: (address: string | null) => void;
-  isConnected: boolean;
+  chain: typeof chain;
+  isTestnet: boolean;
 }
 
 const Web3Context = createContext<Web3ContextType>({
-  walletAddress: null,
-  setWalletAddress: () => {},
-  isConnected: false,
+  chain,
+  isTestnet: !import.meta.env.PROD,
 });
 
 export const useWeb3 = () => useContext(Web3Context);
@@ -19,16 +27,13 @@ interface Web3ProviderProps {
 }
 
 export function Web3Provider({ children }: Web3ProviderProps) {
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const value = {
+    chain,
+    isTestnet: !import.meta.env.PROD,
+  };
 
   return (
-    <Web3Context.Provider
-      value={{
-        walletAddress,
-        setWalletAddress,
-        isConnected: !!walletAddress,
-      }}
-    >
+    <Web3Context.Provider value={value}>
       {children}
     </Web3Context.Provider>
   );

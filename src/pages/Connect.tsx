@@ -1,28 +1,47 @@
-﻿import { useState } from "react";
+﻿import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/layout/container";
 import { WalletGenerator } from "@/components/auth/wallet-generator";
+import { WalletImport } from "@/components/auth/wallet-import";
+import { useAuth } from "@/hooks/use-auth";
 import logo from "@/assets/logo-singulai.png";
 import {
   Wallet,
   Mail,
   ArrowLeft,
-  Plus,
-  ChevronRight,
   Key,
+  ChevronRight,
+  Plus,
+  Loader2,
+  Download,
 } from "lucide-react";
 
-type AuthMethod = "email" | "create" | "import" | null;
+type AuthMethod = "import" | "email" | "create" | null;
 
 export default function ConnectPage() {
   const [authMethod, setAuthMethod] = useState<AuthMethod>(null);
+  const { isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
 
-  const handleWalletCreated = () => {
-    navigate("/auth");
+  useEffect(() => {
+    if (isAuthenticated && !loading) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, loading, navigate]);
+
+  const handleSuccess = () => {
+    navigate('/dashboard', { replace: true });
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -37,26 +56,13 @@ export default function ConnectPage() {
             <img src={logo} alt="SingulAI" className="h-10 w-auto mx-auto mb-6" />
           </Link>
           <h1 className="text-h3 font-bold text-foreground mb-2">Bem-vindo ao SingulAI</h1>
-          <p className="text-muted-foreground">Escolha como deseja continuar</p>
+          <p className="text-muted-foreground">Conecte ou crie uma wallet para continuar</p>
         </div>
 
         <GlassCard variant="glow" size="lg">
           {!authMethod ? (
             <div className="space-y-4">
-              <button
-                onClick={() => navigate("/auth")}
-                className="w-full flex items-center gap-4 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left group"
-              >
-                <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
-                  <Mail className="w-6 h-6 text-green-400" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-foreground">Login com Email</p>
-                  <p className="text-sm text-muted-foreground">Acesse sua conta existente</p>
-                </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground" />
-              </button>
-
+              {/* Importar Wallet Existente */}
               <button
                 onClick={() => setAuthMethod("import")}
                 className="w-full flex items-center gap-4 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left group"
@@ -66,7 +72,22 @@ export default function ConnectPage() {
                 </div>
                 <div className="flex-1">
                   <p className="font-medium text-foreground">Importar Wallet</p>
-                  <p className="text-sm text-muted-foreground">Use sua chave privada existente</p>
+                  <p className="text-sm text-muted-foreground">Usar chave privada existente</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </button>
+
+              {/* Login por Email */}
+              <button
+                onClick={() => navigate('/auth')}
+                className="w-full flex items-center gap-4 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left group"
+              >
+                <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
+                  <Mail className="w-6 h-6 text-green-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-foreground">Email e Senha</p>
+                  <p className="text-sm text-muted-foreground">Login tradicional</p>
                 </div>
                 <ChevronRight className="w-5 h-5 text-muted-foreground" />
               </button>
@@ -80,6 +101,7 @@ export default function ConnectPage() {
                 </div>
               </div>
 
+              {/* Criar Nova Wallet */}
               <Button
                 variant="secondary"
                 className="w-full gap-2"
@@ -89,34 +111,19 @@ export default function ConnectPage() {
                 Criar Nova Wallet
               </Button>
             </div>
-          ) : authMethod === "create" ? (
-            <WalletGenerator
-              onWalletCreated={handleWalletCreated}
+          ) : authMethod === "import" ? (
+            <WalletImport 
+              onSuccess={handleSuccess}
               onBack={() => setAuthMethod(null)}
             />
-          ) : authMethod === "import" ? (
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-foreground mb-4">Importar Wallet</h3>
-              <p className="text-muted-foreground text-sm">
-                Para importar sua wallet, faca login com email primeiro e depois adicione sua chave privada nas configuracoes.
-              </p>
-              <Button
-                variant="hero"
-                className="w-full"
-                onClick={() => navigate("/auth")}
-              >
-                Ir para Login
-              </Button>
-              <button
-                onClick={() => setAuthMethod(null)}
-                className="w-full text-center text-sm text-muted-foreground hover:text-foreground mt-4"
-              >
-                Voltar
-              </button>
-            </div>
+          ) : authMethod === "create" ? (
+            <WalletGenerator
+              onWalletCreated={() => navigate('/auth')}
+              onBack={() => setAuthMethod(null)}
+            />
           ) : null}
 
-          {authMethod && authMethod !== "create" && authMethod !== "import" && (
+          {authMethod && (
             <button
               onClick={() => setAuthMethod(null)}
               className="w-full text-center text-sm text-muted-foreground hover:text-foreground mt-6"

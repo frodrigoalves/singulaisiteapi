@@ -2,6 +2,10 @@
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useApp } from "@/contexts/app-context";
+import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import {
   Table,
   TableBody,
@@ -10,19 +14,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useWeb3 } from "@/providers/web3-provider";
-import { useAuth } from "@/hooks/use-auth";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import {
   Coins,
   Send,
-  ArrowUpRight,
   ArrowDownLeft,
+  ArrowUpRight,
   ExternalLink,
   Loader2,
-  RefreshCw,
   Wallet,
+  RefreshCw,
 } from "lucide-react";
 
 interface Transaction {
@@ -31,65 +31,67 @@ interface Transaction {
   from_address: string;
   to_address: string;
   amount: string;
-  tx_hash: string;
   created_at: string;
+  tx_hash: string | null;
 }
 
 export default function TokensPage() {
-  const { wallet } = useWeb3();
+  const { t } = useApp();
   const { user } = useAuth();
   const { toast } = useToast();
 
   const [balance, setBalance] = useState("0.00");
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
   const [sending, setSending] = useState(false);
 
-  // Carregar saldo e transacoes
+  // Carregar dados do usuario
   useEffect(() => {
     async function loadData() {
       if (!user) return;
 
       try {
-        // Buscar perfil com saldo
+        // Buscar perfil com wallet
         const { data: profile } = await supabase
           .from("profiles")
-          .select("sgl_balance, wallet_address")
+          .select("wallet_address, sgl_balance")
           .eq("user_id", user.id)
           .single();
 
         if (profile) {
-          setBalance(profile.sgl_balance?.toString() || "0.00");
+          setWalletAddress(profile.wallet_address);
+          setBalance(profile.sgl_balance?.toLocaleString() || "0.00");
         }
 
-        // Buscar transacoes do usuario
+        // Buscar transacoes (se existir a tabela)
         const { data: txs } = await supabase
           .from("transactions")
           .select("*")
-          .or(`from_address.eq.${wallet.address},to_address.eq.${wallet.address}`)
+          .or(`from_address.eq.${profile?.wallet_address},to_address.eq.${profile?.wallet_address}`)
           .order("created_at", { ascending: false })
-          .limit(20);
+          .limit(10);
 
         if (txs) {
           setTransactions(txs.map(tx => ({
             ...tx,
-            type: tx.to_address === wallet.address ? "receive" : "send"
+            type: tx.to_address === profile?.wallet_address ? "receive" : "send"
           })));
         }
       } catch (error) {
-        console.error("Error loading data:", error);
+        console.error("Erro ao carregar dados:", error);
       } finally {
         setLoading(false);
       }
     }
 
     loadData();
-  }, [user, wallet.address]);
+  }, [user]);
 
   const handleTransfer = async () => {
-    if (!recipient || !amount || !wallet.address) {
+    if (!recipient || !amount || !walletAddress) {
       toast({
         title: "Erro",
         description: "Preencha todos os campos",
@@ -100,28 +102,16 @@ export default function TokensPage() {
 
     setSending(true);
     try {
-      // Criar transacao no banco
-      const { error } = await supabase.from("transactions").insert({
-        from_address: wallet.address,
-        to_address: recipient,
-        amount: parseFloat(amount),
-        tx_hash: `0x${Date.now().toString(16)}`, // Hash temporario
-        status: "pending",
-      });
-
-      if (error) throw error;
-
+      // Aqui vai a logica de transferencia real
+      // Por enquanto, apenas simula
       toast({
-        title: "Transferencia iniciada!",
-        description: `Enviando ${amount} SGL para ${recipient.slice(0, 10)}...`,
+        title: "Funcionalidade em desenvolvimento",
+        description: "Transferencias serao habilitadas em breve!",
       });
-
-      setRecipient("");
-      setAmount("");
     } catch (error) {
       toast({
-        title: "Erro na transferencia",
-        description: "Tente novamente mais tarde",
+        title: "Erro",
+        description: "Falha na transferencia",
         variant: "destructive",
       });
     } finally {
@@ -134,8 +124,8 @@ export default function TokensPage() {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
   };
 
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString("pt-BR");
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString("pt-BR");
   };
 
   if (loading) {
@@ -154,7 +144,7 @@ export default function TokensPage() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Balance Card */}
+        {/* Saldo */}
         <GlassCard variant="glow" size="lg">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
@@ -166,10 +156,10 @@ export default function TokensPage() {
             </div>
           </div>
 
-          {wallet.address ? (
+          {walletAddress ? (
             <div className="p-3 rounded-lg bg-secondary/30">
               <p className="text-xs text-muted-foreground mb-1">Sua Wallet</p>
-              <p className="font-mono text-sm text-foreground">{formatAddress(wallet.address)}</p>
+              <p className="font-mono text-sm text-foreground">{formatAddress(walletAddress)}</p>
             </div>
           ) : (
             <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
@@ -178,7 +168,7 @@ export default function TokensPage() {
           )}
         </GlassCard>
 
-        {/* Transfer Card */}
+        {/* Transferir */}
         <GlassCard variant="default" size="lg" className="lg:col-span-2">
           <h3 className="text-lg font-semibold text-foreground mb-6">Transferir SGL</h3>
 
@@ -207,7 +197,7 @@ export default function TokensPage() {
                   variant="ghost"
                   size="sm"
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-primary"
-                  onClick={() => setAmount(balance.replace(/,/g, ""))}
+                  onClick={() => setAmount(balance.replace(/,/g, ''))}
                 >
                   MAX
                 </Button>
@@ -215,11 +205,11 @@ export default function TokensPage() {
             </div>
 
             <Button
-              variant="hero"
+              variant="default"
               size="lg"
               className="w-full gap-2"
               onClick={handleTransfer}
-              disabled={sending || !wallet.address}
+              disabled={sending || !walletAddress}
             >
               {sending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -232,25 +222,16 @@ export default function TokensPage() {
         </GlassCard>
       </div>
 
-      {/* Transaction History */}
+      {/* Historico de Transacoes */}
       <GlassCard variant="default" size="default">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-foreground">Historico de Transacoes</h3>
-          <Button variant="outline" size="sm" className="gap-2">
-            <RefreshCw className="w-4 h-4" />
-            Atualizar
+          <Button variant="outline" size="sm" disabled>
+            Exportar CSV
           </Button>
         </div>
 
-        {transactions.length === 0 ? (
-          <div className="text-center py-12">
-            <Wallet className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">Nenhuma transacao encontrada</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Suas transacoes aparecerao aqui
-            </p>
-          </div>
-        ) : (
+        {transactions.length > 0 ? (
           <Table>
             <TableHeader>
               <TableRow className="border-white/10">
@@ -275,30 +256,42 @@ export default function TokensPage() {
                     </div>
                   </TableCell>
                   <TableCell className="font-mono text-sm">
-                    {tx.from_address === wallet.address ? "Voce" : formatAddress(tx.from_address)}
+                    {tx.from_address === walletAddress ? "Voce" : formatAddress(tx.from_address)}
                   </TableCell>
                   <TableCell className="font-mono text-sm">
-                    {tx.to_address === wallet.address ? "Voce" : formatAddress(tx.to_address)}
+                    {tx.to_address === walletAddress ? "Voce" : formatAddress(tx.to_address)}
                   </TableCell>
-                  <TableCell className={`font-mono ${tx.type === "receive" ? "text-green-400" : "text-red-400"}`}>
+                  <TableCell className={tx.type === "receive" ? "text-green-400 font-mono" : "text-red-400 font-mono"}>
                     {tx.type === "receive" ? "+" : "-"}{tx.amount} SGL
                   </TableCell>
                   <TableCell className="text-muted-foreground">{formatDate(tx.created_at)}</TableCell>
                   <TableCell>
-                    <a
-                      href={`https://basescan.org/tx/${tx.tx_hash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 font-mono text-sm text-muted-foreground hover:text-foreground"
-                    >
-                      {formatAddress(tx.tx_hash)}
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
+                    {tx.tx_hash ? (
+                      <a
+                        href={`https://basescan.org/tx/${tx.tx_hash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 font-mono text-sm text-muted-foreground hover:text-foreground"
+                      >
+                        {formatAddress(tx.tx_hash)}
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+        ) : (
+          <div className="text-center py-12">
+            <Wallet className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">Nenhuma transacao encontrada</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Suas transacoes aparecerão aqui
+            </p>
+          </div>
         )}
       </GlassCard>
     </div>
