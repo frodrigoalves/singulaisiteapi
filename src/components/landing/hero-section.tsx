@@ -143,7 +143,75 @@ export function HeroSection() {
             </div>
           </div>
 
-          {/* Visual - Avatar Carousel */}
+          {/* Visual - Avatar Carousel - Mobile */}
+          <div className="relative md:hidden mt-6">
+            <GlassCard variant="glow" size="default" className="relative overflow-hidden p-4">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-accent to-primary" />
+              
+              <div className={`flex items-center gap-4 transition-all duration-300 ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+                {/* Avatar */}
+                <div className="relative flex-shrink-0">
+                  <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-primary/30">
+                    <img
+                      src={currentCard.avatar}
+                      alt={`${currentCard.name} Avatar`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                    <IconComponent className="w-4 h-4 text-white" />
+                  </div>
+                </div>
+                
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <div className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold mb-1 ${currentCard.tagColor}`}>
+                    {currentCard.tag}
+                  </div>
+                  <h3 className="text-sm font-bold text-foreground truncate">{currentCard.name}</h3>
+                  <p className="text-xs text-muted-foreground truncate">{currentCard.title}</p>
+                  <div className="flex gap-3 mt-2">
+                    <div className="text-center">
+                      <p className="text-xs font-bold text-foreground">{currentCard.tokens}</p>
+                      <p className="text-[10px] text-muted-foreground">SGL</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs font-bold text-foreground">{currentCard.nfts}</p>
+                      <p className="text-[10px] text-muted-foreground">NFTs</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs font-bold text-foreground">{currentCard.apy}</p>
+                      <p className="text-[10px] text-muted-foreground">APY</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Carousel Indicators */}
+              <div className="flex justify-center gap-1.5 mt-3">
+                {avatarCards.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setIsAnimating(true);
+                      setTimeout(() => {
+                        setCurrentIndex(index);
+                        setIsAnimating(false);
+                      }, 300);
+                    }}
+                    className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                      index === currentIndex 
+                        ? 'bg-primary w-4' 
+                        : 'bg-muted-foreground/30'
+                    }`}
+                    aria-label={`Go to avatar ${index + 1}`}
+                  />
+                ))}
+              </div>
+            </GlassCard>
+          </div>
+
+          {/* Visual - Avatar Carousel - Desktop */}
           <div className="relative lg:pl-8 hidden md:block">
             {/* Main avatar card */}
             <GlassCard variant="glow" size="lg" className="relative overflow-hidden">
