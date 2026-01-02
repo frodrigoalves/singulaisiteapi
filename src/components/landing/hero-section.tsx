@@ -111,9 +111,9 @@ export function HeroSection() {
                 </div>
                 
                 <h1 className="text-xl sm:text-3xl md:text-h1 lg:text-display font-bold text-foreground leading-tight">
-                  {t("hero.title1")}{" "}
-                  <span className="text-gradient">{t("hero.title2")}</span>{" "}
-                  {t("hero.title3")}
+                  <span className="block">{t("hero.title1")}</span>
+                  <span className="block text-gradient">{t("hero.title2")}</span>
+                  <span className="block">{t("hero.title3")}</span>
                 </h1>
                 
                 <p className="text-xs md:text-body-lg text-muted-foreground max-w-xl hidden md:block">
