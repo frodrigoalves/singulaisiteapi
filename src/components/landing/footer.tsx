@@ -43,25 +43,25 @@ export function Footer() {
   return (
     <footer className="border-t border-border bg-card/50">
       <Container size="xl">
-        <div className="py-16 md:py-20">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 lg:gap-12">
+        <div className="py-8 md:py-16 lg:py-20">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-6 md:gap-8 lg:gap-12">
             {/* Brand */}
             <div className="col-span-2 md:col-span-1">
-              <Link to="/" className="inline-block mb-4">
-                <img src={logo} alt="SingulAI" className="h-8 w-auto logo-adaptive" />
+              <Link to="/" className="inline-block mb-3 md:mb-4">
+                <img src={logo} alt="SingulAI" className="h-6 md:h-8 w-auto logo-adaptive" />
               </Link>
-              <p className="text-sm text-muted-foreground mb-6 max-w-xs">
+              <p className="text-xs md:text-sm text-muted-foreground mb-4 md:mb-6 max-w-xs">
                 {t("footer.description")}
               </p>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 md:gap-3">
                 {socialLinks.map((social) => (
                   <a
                     key={social.label}
                     href={social.href}
-                    className="p-2 rounded-lg bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                    className="p-1.5 md:p-2 rounded-lg bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                     aria-label={social.label}
                   >
-                    <social.icon className="w-4 h-4" />
+                    <social.icon className="w-3.5 h-3.5 md:w-4 md:h-4" />
                   </a>
                 ))}
               </div>

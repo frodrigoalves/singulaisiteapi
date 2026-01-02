@@ -82,12 +82,12 @@ export function HeroSection() {
   const IconComponent = currentCard.icon;
 
   return (
-    <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
+    <section className="relative min-h-screen flex items-center pt-16 md:pt-20 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-muted/20" />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[128px] animate-pulse-slow" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-[128px] animate-pulse-slow" style={{ animationDelay: "2s" }} />
+        <div className="absolute top-1/4 left-1/4 w-48 md:w-96 h-48 md:h-96 bg-primary/10 rounded-full blur-[128px] animate-pulse-slow" />
+        <div className="absolute bottom-1/4 right-1/4 w-48 md:w-96 h-48 md:h-96 bg-accent/10 rounded-full blur-[128px] animate-pulse-slow" style={{ animationDelay: "2s" }} />
         <div 
           className="absolute inset-0 opacity-[0.02]"
           style={{
@@ -97,54 +97,54 @@ export function HeroSection() {
         />
       </div>
 
-      <Container size="xl" className="py-20 md:py-32">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+      <Container size="xl" className="py-8 md:py-32">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           {/* Content */}
-          <div className="space-y-8">
-            <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium">
-                <Shield className="w-4 h-4" />
+          <div className="space-y-4 md:space-y-8">
+            <div className="space-y-3 md:space-y-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs md:text-sm font-medium">
+                <Shield className="w-3 h-3 md:w-4 md:h-4" />
                 {t("hero.badge")}
               </div>
               
-              <h1 className="text-4xl md:text-h1 lg:text-display font-bold text-foreground leading-tight">
+              <h1 className="text-2xl sm:text-3xl md:text-h1 lg:text-display font-bold text-foreground leading-tight">
                 {t("hero.title1")}{" "}
                 <span className="text-gradient">{t("hero.title2")}</span>{" "}
                 {t("hero.title3")}
               </h1>
               
-              <p className="text-body-lg text-muted-foreground max-w-xl">
+              <p className="text-sm md:text-body-lg text-muted-foreground max-w-xl">
                 {t("hero.description")}
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-2 md:gap-4">
               <Link to="/connect">
-                <Button variant="hero" size="xl">
+                <Button variant="hero" size="default" className="text-sm md:text-base">
                   {t("hero.launchApp")}
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
                 </Button>
               </Link>
               <a href="#whitepaper">
-                <Button variant="hero-outline" size="xl">
+                <Button variant="hero-outline" size="default" className="text-sm md:text-base">
                   {t("hero.whitepaper")}
                 </Button>
               </a>
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-8 border-t border-border">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 pt-4 md:pt-8 border-t border-border">
               {stats.map((stat) => (
-                <div key={stat.label} className="space-y-1">
-                  <p className="text-h4 font-bold text-foreground">{stat.value}</p>
-                  <p className="text-caption text-muted-foreground">{stat.label}</p>
+                <div key={stat.label} className="space-y-0.5 md:space-y-1">
+                  <p className="text-lg md:text-h4 font-bold text-foreground">{stat.value}</p>
+                  <p className="text-xs md:text-caption text-muted-foreground">{stat.label}</p>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Visual - Avatar Carousel */}
-          <div className="relative lg:pl-8">
+          <div className="relative lg:pl-8 hidden md:block">
             {/* Main avatar card */}
             <GlassCard variant="glow" size="lg" className="relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-accent to-primary" />
@@ -223,8 +223,8 @@ export function HeroSection() {
               </div>
             </GlassCard>
 
-            {/* Floating elements */}
-            <div className="absolute -top-4 -left-4 animate-float" style={{ animationDelay: "0.5s" }}>
+            {/* Floating elements - hidden on mobile */}
+            <div className="absolute -top-4 -left-4 animate-float hidden lg:block" style={{ animationDelay: "0.5s" }}>
               <GlassCard size="sm" className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
                   <Coins className="w-5 h-5 text-green-500" />
@@ -236,7 +236,7 @@ export function HeroSection() {
               </GlassCard>
             </div>
 
-            <div className="absolute -bottom-4 -right-4 animate-float" style={{ animationDelay: "1s" }}>
+            <div className="absolute -bottom-4 -right-4 animate-float hidden lg:block" style={{ animationDelay: "1s" }}>
               <GlassCard size="sm" className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
                   <Clock className="w-5 h-5 text-primary" />
