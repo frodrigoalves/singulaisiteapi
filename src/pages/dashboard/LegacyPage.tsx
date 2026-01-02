@@ -8,29 +8,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Shield, Plus, Users, Coins, AlertTriangle, Edit, Trash2 } from "lucide-react";
-
-const legacyPlans = [
-  {
-    id: 1,
-    beneficiaries: 2,
-    totalAssets: "5,000 SGL",
-    inactivityPeriod: "365 days",
-    lastActivity: "2024-01-15",
-    status: "active",
-  },
-];
-
-const beneficiaryAsPlans = [
-  {
-    id: 1,
-    from: "0x9876...5432",
-    allocation: "25%",
-    status: "pending",
-  },
-];
+import { Shield, Plus, Users, AlertTriangle, Edit, Trash2 } from "lucide-react";
+import { useWalletAddress } from "@/hooks/use-blockchain";
+import { useUserLegacy } from "@/hooks/use-legacy";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function LegacyPage() {
+  const address = useWalletAddress();
+  const { data: legacyData, isLoading } = useUserLegacy(address);
+
+  const legacyPlans = legacyData?.plans || [];
+  const beneficiaryAsPlans = legacyData?.asBeneficiary || [];
+
   return (
     <div className="space-y-8">
       <div>
@@ -106,72 +95,100 @@ export default function LegacyPage() {
       {/* Active Plans */}
       <div>
         <h2 className="text-lg font-semibold text-foreground mb-4">Your Legacy Plans</h2>
-        <div className="grid gap-4">
-          {legacyPlans.map((plan) => (
-            <GlassCard key={plan.id} variant="default" size="default">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
-                    <Shield className="w-6 h-6 text-primary" />
+        
+        {isLoading ? (
+          <div className="space-y-4">
+            <Skeleton className="h-24" />
+            <Skeleton className="h-24" />
+          </div>
+        ) : legacyPlans.length === 0 ? (
+          <GlassCard variant="subtle" size="default">
+            <div className="text-center py-8">
+              <Shield className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">No legacy plans created yet</p>
+              <p className="text-sm text-muted-foreground mt-1">Create your first plan above</p>
+            </div>
+          </GlassCard>
+        ) : (
+          <div className="grid gap-4">
+            {legacyPlans.map((plan) => (
+              <GlassCard key={plan.id} variant="default" size="default">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                      <Shield className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground">Legacy Plan #{plan.id}</h3>
+                      <p className="text-sm text-muted-foreground">Created for {plan.beneficiaries} beneficiaries</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground">Legacy Plan #{plan.id}</h3>
-                    <p className="text-sm text-muted-foreground">Created for {plan.beneficiaries} beneficiaries</p>
-                  </div>
-                </div>
 
-                <div className="flex flex-wrap items-center gap-4 sm:gap-6">
-                  <div className="text-center">
-                    <p className="text-xs text-muted-foreground">Total Assets</p>
-                    <p className="font-semibold text-foreground">{plan.totalAssets}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-xs text-muted-foreground">Trigger</p>
-                    <p className="font-semibold text-foreground">{plan.inactivityPeriod}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-xs text-muted-foreground">Last Activity</p>
-                    <p className="font-semibold text-foreground">{plan.lastActivity}</p>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="icon-sm">
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button variant="outline" size="icon-sm" className="text-destructive hover:text-destructive">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                  <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+                    <div className="text-center">
+                      <p className="text-xs text-muted-foreground">Total Assets</p>
+                      <p className="font-semibold text-foreground">{plan.totalAssets}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs text-muted-foreground">Trigger</p>
+                      <p className="font-semibold text-foreground">{plan.inactivityPeriod}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs text-muted-foreground">Last Activity</p>
+                      <p className="font-semibold text-foreground">{plan.lastActivity}</p>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="icon-sm">
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button variant="outline" size="icon-sm" className="text-destructive hover:text-destructive">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </GlassCard>
-          ))}
-        </div>
+              </GlassCard>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* As Beneficiary */}
       <div>
         <h2 className="text-lg font-semibold text-foreground mb-4">As Beneficiary</h2>
-        <div className="grid gap-4">
-          {beneficiaryAsPlans.map((plan) => (
-            <GlassCard key={plan.id} variant="subtle" size="default">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center">
-                    <Users className="w-6 h-6 text-accent" />
+        
+        {isLoading ? (
+          <Skeleton className="h-24" />
+        ) : beneficiaryAsPlans.length === 0 ? (
+          <GlassCard variant="subtle" size="default">
+            <div className="text-center py-8">
+              <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">You are not a beneficiary of any legacy plans</p>
+            </div>
+          </GlassCard>
+        ) : (
+          <div className="grid gap-4">
+            {beneficiaryAsPlans.map((plan) => (
+              <GlassCard key={plan.id} variant="subtle" size="default">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center">
+                      <Users className="w-6 h-6 text-accent" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground">From: {plan.from}</h3>
+                      <p className="text-sm text-muted-foreground">You are allocated {plan.allocation}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground">From: {plan.from}</h3>
-                    <p className="text-sm text-muted-foreground">You are allocated {plan.allocation}</p>
-                  </div>
+                  <span className="px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 text-sm font-medium">
+                    {plan.status}
+                  </span>
                 </div>
-                <span className="px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 text-sm font-medium">
-                  {plan.status}
-                </span>
-              </div>
-            </GlassCard>
-          ))}
-        </div>
+              </GlassCard>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

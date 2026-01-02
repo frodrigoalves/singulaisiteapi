@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AddressDisplay } from "@/components/web3/address-display";
 import { useState } from "react";
-import { Coins, Send, ExternalLink, Copy, ArrowUpRight, ArrowDownLeft } from "lucide-react";
+import { Coins, Send, ExternalLink, ArrowUpRight, ArrowDownLeft, Loader2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -12,23 +12,55 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useWalletAddress, useSglInfo, useSglBalance, useTransferSgl } from "@/hooks/use-blockchain";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
+// Mock transaction history (would come from indexer/events)
 const transactions = [
   { id: 1, type: "receive", from: "0x1234...5678", to: "You", amount: "+500.00 SGL", date: "2024-01-15", hash: "0xabc...123" },
   { id: 2, type: "send", from: "You", to: "0x2345...6789", amount: "-100.00 SGL", date: "2024-01-14", hash: "0xdef...456" },
   { id: 3, type: "receive", from: "0x3456...7890", to: "You", amount: "+250.00 SGL", date: "2024-01-13", hash: "0xghi...789" },
 ];
 
+function formatBalance(balance: string | undefined): string {
+  if (!balance) return "0.00";
+  const num = parseFloat(balance);
+  return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
 export default function TokensPage() {
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
+  
+  const address = useWalletAddress();
+  const { data: sglInfo, isLoading: infoLoading } = useSglInfo();
+  const { data: balanceData, isLoading: balanceLoading } = useSglBalance(address);
+  const transferMutation = useTransferSgl();
 
-  const tokenInfo = {
-    name: "SingulAI Token",
-    symbol: "SGL",
-    contract: "0x7F3a4B2c8D9E1f6A5B3C2D8E9F1A6B3C8D2E8B2c",
-    balance: "2,847.50",
-    balanceUsd: "$4,271.25",
+  const isLoading = infoLoading || balanceLoading;
+  
+  const balance = balanceData?.formatted || "0";
+  const balanceUsd = `$${(parseFloat(balance.replace(/,/g, '') || '0') * 1.5).toFixed(2)}`;
+
+  const handleTransfer = async () => {
+    if (!address || !recipient || !amount) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    try {
+      const result = await transferMutation.mutateAsync({
+        from: address,
+        to: recipient,
+        amount: amount,
+      });
+      toast.success(`Transfer successful! Tx: ${result.txHash}`);
+      setRecipient("");
+      setAmount("");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Transfer failed");
+    }
   };
 
   return (
@@ -41,28 +73,44 @@ export default function TokensPage() {
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Token Info */}
         <GlassCard variant="glow" size="lg">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <Coins className="w-8 h-8 text-white" />
+          {isLoading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-16 w-16 rounded-2xl" />
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-10 w-full" />
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-foreground">{tokenInfo.name}</h3>
-              <p className="text-muted-foreground">{tokenInfo.symbol}</p>
-            </div>
-          </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                  <Coins className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-foreground">
+                    {sglInfo?.name || "SingulAI Token"}
+                  </h3>
+                  <p className="text-muted-foreground">{sglInfo?.symbol || "SGL"}</p>
+                </div>
+              </div>
 
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Contract Address</p>
-              <AddressDisplay address={tokenInfo.contract} size="sm" />
-            </div>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Contract Address</p>
+                  <AddressDisplay 
+                    address={sglInfo?.address || "0x7F3a4B2c8D9E1f6A5B3C2D8E9F1A6B3C8D2E8B2c"} 
+                    size="sm" 
+                  />
+                </div>
 
-            <div className="pt-4 border-t border-white/10">
-              <p className="text-sm text-muted-foreground mb-1">Your Balance</p>
-              <p className="text-h3 font-bold text-foreground">{tokenInfo.balance} SGL</p>
-              <p className="text-sm text-muted-foreground">{tokenInfo.balanceUsd}</p>
-            </div>
-          </div>
+                <div className="pt-4 border-t border-white/10">
+                  <p className="text-sm text-muted-foreground mb-1">Your Balance</p>
+                  <p className="text-h3 font-bold text-foreground">{formatBalance(balance)} SGL</p>
+                  <p className="text-sm text-muted-foreground">{balanceUsd}</p>
+                </div>
+              </div>
+            </>
+          )}
         </GlassCard>
 
         {/* Transfer */}
@@ -94,7 +142,7 @@ export default function TokensPage() {
                   variant="ghost"
                   size="sm"
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-primary"
-                  onClick={() => setAmount("2847.50")}
+                  onClick={() => setAmount(balance.replace(/,/g, ''))}
                 >
                   MAX
                 </Button>
@@ -105,9 +153,19 @@ export default function TokensPage() {
               Estimated Gas: 0.002 ETH
             </div>
 
-            <Button variant="hero" size="lg" className="w-full gap-2">
-              <Send className="w-4 h-4" />
-              Transfer
+            <Button 
+              variant="hero" 
+              size="lg" 
+              className="w-full gap-2"
+              onClick={handleTransfer}
+              disabled={transferMutation.isPending || !address}
+            >
+              {transferMutation.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+              {transferMutation.isPending ? "Transferring..." : "Transfer"}
             </Button>
           </div>
         </GlassCard>
@@ -150,7 +208,12 @@ export default function TokensPage() {
                 </TableCell>
                 <TableCell className="text-muted-foreground">{tx.date}</TableCell>
                 <TableCell>
-                  <a href="#" className="inline-flex items-center gap-1 font-mono text-sm text-muted-foreground hover:text-foreground">
+                  <a 
+                    href={`https://sepolia.etherscan.io/tx/${tx.hash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 font-mono text-sm text-muted-foreground hover:text-foreground"
+                  >
                     {tx.hash}
                     <ExternalLink className="w-3 h-3" />
                   </a>
