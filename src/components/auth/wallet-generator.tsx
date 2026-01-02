@@ -57,6 +57,13 @@ export function WalletGenerator({ onWalletCreated, onBack }: WalletGeneratorProp
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
 
+  // Helper function to convert Uint8Array to hex string (browser-compatible)
+  const bytesToHex = (bytes: Uint8Array): string => {
+    return Array.from(bytes)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+  };
+
   const generateWallet = useCallback(async () => {
     setIsGenerating(true);
     try {
@@ -66,12 +73,16 @@ export function WalletGenerator({ onWalletCreated, onBack }: WalletGeneratorProp
       // Derive account from mnemonic
       const account = mnemonicToAccount(mnemonic);
       
+      // Get private key using browser-compatible conversion
+      const hdKey = account.getHdKey();
+      const privateKeyHex = hdKey.privateKey 
+        ? `0x${bytesToHex(hdKey.privateKey)}`
+        : '';
+      
       const newWalletData: WalletData = {
         mnemonic,
         address: account.address,
-        privateKey: account.getHdKey().privateKey 
-          ? `0x${Buffer.from(account.getHdKey().privateKey!).toString('hex')}`
-          : '',
+        privateKey: privateKeyHex,
       };
       
       setWalletData(newWalletData);
