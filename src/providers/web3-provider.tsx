@@ -1,51 +1,76 @@
-﻿import { ReactNode, createContext, useContext, useState } from 'react';
+﻿import { ReactNode, createContext, useContext, useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
-interface WalletContextType {
+interface WalletState {
   address: string | null;
   isConnected: boolean;
-  connect: (address: string) => void;
+  balance: string;
+}
+
+interface Web3ContextType {
+  wallet: WalletState;
+  setWallet: (wallet: WalletState) => void;
   disconnect: () => void;
 }
 
-const WalletContext = createContext<WalletContextType>({
-  address: null,
-  isConnected: false,
-  connect: () => {},
-  disconnect: () => {},
-});
+const Web3Context = createContext<Web3ContextType | null>(null);
 
-export const useWallet = () => useContext(WalletContext);
+export function useWeb3() {
+  const context = useContext(Web3Context);
+  if (!context) {
+    throw new Error("useWeb3 must be used within Web3Provider");
+  }
+  return context;
+}
 
 interface Web3ProviderProps {
   children: ReactNode;
 }
 
 export function Web3Provider({ children }: Web3ProviderProps) {
-  const [address, setAddress] = useState<string | null>(() => {
-    // Recuperar do localStorage se existir
-    return localStorage.getItem('wallet_address');
+  const [wallet, setWallet] = useState<WalletState>({
+    address: null,
+    isConnected: false,
+    balance: "0",
   });
 
-  const connect = (walletAddress: string) => {
-    setAddress(walletAddress);
-    localStorage.setItem('wallet_address', walletAddress);
-  };
+  // Carregar wallet do usuario logado
+  useEffect(() => {
+    async function loadWallet() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("wallet_address")
+          .eq("user_id", user.id)
+          .single();
+
+        if (profile?.wallet_address) {
+          setWallet({
+            address: profile.wallet_address,
+            isConnected: true,
+            balance: "0", // TODO: Buscar saldo real
+          });
+        }
+      }
+    }
+    loadWallet();
+
+    // Listener para mudancas de auth
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      loadWallet();
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const disconnect = () => {
-    setAddress(null);
-    localStorage.removeItem('wallet_address');
+    setWallet({ address: null, isConnected: false, balance: "0" });
   };
 
   return (
-    <WalletContext.Provider
-      value={{
-        address,
-        isConnected: !!address,
-        connect,
-        disconnect,
-      }}
-    >
+    <Web3Context.Provider value={{ wallet, setWallet, disconnect }}>
       {children}
-    </WalletContext.Provider>
+    </Web3Context.Provider>
   );
 }
