@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Link, useLocation, Outlet } from "react-router-dom";
+import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { WalletButton } from "@/components/web3/wallet-button";
 import { useApp } from "@/contexts/app-context";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/logo-singulai.png";
 import {
   LayoutGrid,
@@ -19,12 +21,29 @@ import {
   Search,
   ExternalLink,
   Languages,
+  LogOut,
 } from "lucide-react";
 
 export function DashboardLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { language, setLanguage, t } = useApp();
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast({
+        title: 'Erro ao sair',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } else {
+      navigate('/');
+    }
+  };
 
   const navItems = [
     { labelKey: "sidebar.overview", icon: LayoutGrid, href: "/dashboard" },
@@ -98,8 +117,16 @@ export function DashboardLayout() {
           })}
         </nav>
 
-        {/* Bottom actions - Language toggle */}
+        {/* Bottom actions */}
         <div className="p-3 border-t border-sidebar-border space-y-2">
+          {/* User info */}
+          {!sidebarCollapsed && user && (
+            <div className="px-3 py-2 mb-2">
+              <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+            </div>
+          )}
+          
+          {/* Language toggle */}
           <Button
             variant="ghost"
             size={sidebarCollapsed ? "icon" : "default"}
@@ -112,6 +139,22 @@ export function DashboardLayout() {
             <Languages className="w-5 h-5" />
             {!sidebarCollapsed && (
               <span className="ml-3 text-sm">{language === "en" ? "PT" : "EN"}</span>
+            )}
+          </Button>
+
+          {/* Logout button */}
+          <Button
+            variant="ghost"
+            size={sidebarCollapsed ? "icon" : "default"}
+            onClick={handleSignOut}
+            className={cn(
+              "text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive",
+              !sidebarCollapsed && "w-full justify-start"
+            )}
+          >
+            <LogOut className="w-5 h-5" />
+            {!sidebarCollapsed && (
+              <span className="ml-3 text-sm">Sair</span>
             )}
           </Button>
         </div>
