@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppProvider } from "./contexts/app-context";
+import { Web3Provider } from "./providers/web3-provider";
 import { ProtectedRoute } from "./components/auth/protected-route";
 import Index from "./pages/Index";
 import Connect from "./pages/Connect";
@@ -24,37 +25,39 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AppProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/roadmap" element={<Roadmap />} />
-            <Route path="/connect" element={<Connect />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<DashboardOverview />} />
-              <Route path="tokens" element={<TokensPage />} />
-              <Route path="staking" element={<StakingPage />} />
-              <Route path="avatar" element={<AvatarPage />} />
-              <Route path="timecapsule" element={<TimeCapsulePage />} />
-              <Route path="legacy" element={<LegacyPage />} />
-              <Route path="settings" element={<SettingsPage />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AppProvider>
+    <Web3Provider>
+      <AppProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/roadmap" element={<Roadmap />} />
+              <Route path="/connect" element={<Connect />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<DashboardOverview />} />
+                <Route path="tokens" element={<TokensPage />} />
+                <Route path="staking" element={<StakingPage />} />
+                <Route path="avatar" element={<AvatarPage />} />
+                <Route path="timecapsule" element={<TimeCapsulePage />} />
+                <Route path="legacy" element={<LegacyPage />} />
+                <Route path="settings" element={<SettingsPage />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AppProvider>
+    </Web3Provider>
   </QueryClientProvider>
 );
 
