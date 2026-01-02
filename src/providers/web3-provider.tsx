@@ -1,75 +1,34 @@
-﻿import { ReactNode, createContext, useContext, useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-
-interface WalletState {
-  address: string | null;
-  isConnected: boolean;
-  balance: string;
-}
+﻿import { ReactNode, createContext, useContext, useState } from 'react';
 
 interface Web3ContextType {
-  wallet: WalletState;
-  setWallet: (wallet: WalletState) => void;
-  disconnect: () => void;
+  walletAddress: string | null;
+  setWalletAddress: (address: string | null) => void;
+  isConnected: boolean;
 }
 
-const Web3Context = createContext<Web3ContextType | null>(null);
+const Web3Context = createContext<Web3ContextType>({
+  walletAddress: null,
+  setWalletAddress: () => {},
+  isConnected: false,
+});
 
-export function useWeb3() {
-  const context = useContext(Web3Context);
-  if (!context) {
-    throw new Error("useWeb3 must be used within Web3Provider");
-  }
-  return context;
-}
+export const useWeb3 = () => useContext(Web3Context);
 
 interface Web3ProviderProps {
   children: ReactNode;
 }
 
 export function Web3Provider({ children }: Web3ProviderProps) {
-  const [wallet, setWallet] = useState<WalletState>({
-    address: null,
-    isConnected: false,
-    balance: "0",
-  });
-
-  // Carregar wallet do usuario logado
-  useEffect(() => {
-    async function loadWallet() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("wallet_address")
-          .eq("user_id", user.id)
-          .single();
-
-        if (profile?.wallet_address) {
-          setWallet({
-            address: profile.wallet_address,
-            isConnected: true,
-            balance: "0", // TODO: Buscar saldo real
-          });
-        }
-      }
-    }
-    loadWallet();
-
-    // Listener para mudancas de auth
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      loadWallet();
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const disconnect = () => {
-    setWallet({ address: null, isConnected: false, balance: "0" });
-  };
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
 
   return (
-    <Web3Context.Provider value={{ wallet, setWallet, disconnect }}>
+    <Web3Context.Provider
+      value={{
+        walletAddress,
+        setWalletAddress,
+        isConnected: !!walletAddress,
+      }}
+    >
       {children}
     </Web3Context.Provider>
   );
