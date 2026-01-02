@@ -21,6 +21,12 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.contact": "Contact",
     "nav.dashboard": "Dashboard",
     "nav.launchApp": "Launch App",
+    "nav.roadmap": "Roadmap",
+    "nav.backToHome": "Back to Home",
+    
+    // Roadmap
+    "roadmap.title": "Development Roadmap",
+    "roadmap.subtitle": "Backend API NestJS - 100% Functional. Stage 3 Complete.",
     
     // Hero
     "hero.badge": "Secured by Ethereum",
@@ -256,6 +262,12 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.contact": "Contato",
     "nav.dashboard": "Painel",
     "nav.launchApp": "Iniciar App",
+    "nav.roadmap": "Roadmap",
+    "nav.backToHome": "Voltar ao Início",
+    
+    // Roadmap
+    "roadmap.title": "Roadmap de Desenvolvimento",
+    "roadmap.subtitle": "Backend API NestJS - 100% Funcional. Etapa 3 Completa.",
     
     // Hero
     "hero.badge": "Protegido por Ethereum",
