@@ -98,25 +98,74 @@ export function HeroSection() {
       </div>
 
       <Container size="xl" className="py-8 md:py-32">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
-          {/* Content */}
+        <div className="grid lg:grid-cols-2 gap-6 lg:gap-16 items-center">
+          {/* Content + Mobile Avatar */}
           <div className="space-y-4 md:space-y-8">
-            <div className="space-y-3 md:space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs md:text-sm font-medium">
-                <Shield className="w-3 h-3 md:w-4 md:h-4" />
-                {t("hero.badge")}
+            {/* Mobile: Title + Avatar side by side */}
+            <div className="flex gap-4 md:block">
+              {/* Text content */}
+              <div className="flex-1 space-y-3 md:space-y-6">
+                <div className="inline-flex items-center gap-2 px-2 py-1 md:px-4 md:py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] md:text-sm font-medium">
+                  <Shield className="w-3 h-3 md:w-4 md:h-4" />
+                  {t("hero.badge")}
+                </div>
+                
+                <h1 className="text-xl sm:text-3xl md:text-h1 lg:text-display font-bold text-foreground leading-tight">
+                  {t("hero.title1")}{" "}
+                  <span className="text-gradient">{t("hero.title2")}</span>{" "}
+                  {t("hero.title3")}
+                </h1>
+                
+                <p className="text-xs md:text-body-lg text-muted-foreground max-w-xl hidden md:block">
+                  {t("hero.description")}
+                </p>
               </div>
-              
-              <h1 className="text-2xl sm:text-3xl md:text-h1 lg:text-display font-bold text-foreground leading-tight">
-                {t("hero.title1")}{" "}
-                <span className="text-gradient">{t("hero.title2")}</span>{" "}
-                {t("hero.title3")}
-              </h1>
-              
-              <p className="text-sm md:text-body-lg text-muted-foreground max-w-xl">
-                {t("hero.description")}
-              </p>
+
+              {/* Mobile Avatar - inline with title */}
+              <div className="flex-shrink-0 md:hidden">
+                <div className={`transition-all duration-300 ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+                  <div className="relative">
+                    <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-primary/30 shadow-glow">
+                      <img
+                        src={currentCard.avatar}
+                        alt={`${currentCard.name} Avatar`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                      <IconComponent className="w-4 h-4 text-white" />
+                    </div>
+                  </div>
+                  <p className="text-[10px] font-medium text-center text-foreground mt-2 truncate w-24">{currentCard.name}</p>
+                  {/* Indicators */}
+                  <div className="flex justify-center gap-1 mt-1">
+                    {avatarCards.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          setIsAnimating(true);
+                          setTimeout(() => {
+                            setCurrentIndex(index);
+                            setIsAnimating(false);
+                          }, 300);
+                        }}
+                        className={`w-1 h-1 rounded-full transition-all duration-300 ${
+                          index === currentIndex 
+                            ? 'bg-primary w-2' 
+                            : 'bg-muted-foreground/30'
+                        }`}
+                        aria-label={`Go to avatar ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
+
+            {/* Mobile description */}
+            <p className="text-xs text-muted-foreground max-w-xl md:hidden">
+              {t("hero.description")}
+            </p>
 
             <div className="flex flex-wrap gap-2 md:gap-4">
               <Link to="/connect">
@@ -141,74 +190,6 @@ export function HeroSection() {
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Visual - Avatar Carousel - Mobile */}
-          <div className="relative md:hidden mt-6">
-            <GlassCard variant="glow" size="default" className="relative overflow-hidden p-4">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-accent to-primary" />
-              
-              <div className={`flex items-center gap-4 transition-all duration-300 ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
-                {/* Avatar */}
-                <div className="relative flex-shrink-0">
-                  <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-primary/30">
-                    <img
-                      src={currentCard.avatar}
-                      alt={`${currentCard.name} Avatar`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                    <IconComponent className="w-4 h-4 text-white" />
-                  </div>
-                </div>
-                
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold mb-1 ${currentCard.tagColor}`}>
-                    {currentCard.tag}
-                  </div>
-                  <h3 className="text-sm font-bold text-foreground truncate">{currentCard.name}</h3>
-                  <p className="text-xs text-muted-foreground truncate">{currentCard.title}</p>
-                  <div className="flex gap-3 mt-2">
-                    <div className="text-center">
-                      <p className="text-xs font-bold text-foreground">{currentCard.tokens}</p>
-                      <p className="text-[10px] text-muted-foreground">SGL</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs font-bold text-foreground">{currentCard.nfts}</p>
-                      <p className="text-[10px] text-muted-foreground">NFTs</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs font-bold text-foreground">{currentCard.apy}</p>
-                      <p className="text-[10px] text-muted-foreground">APY</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Carousel Indicators */}
-              <div className="flex justify-center gap-1.5 mt-3">
-                {avatarCards.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      setIsAnimating(true);
-                      setTimeout(() => {
-                        setCurrentIndex(index);
-                        setIsAnimating(false);
-                      }, 300);
-                    }}
-                    className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                      index === currentIndex 
-                        ? 'bg-primary w-4' 
-                        : 'bg-muted-foreground/30'
-                    }`}
-                    aria-label={`Go to avatar ${index + 1}`}
-                  />
-                ))}
-              </div>
-            </GlassCard>
           </div>
 
           {/* Visual - Avatar Carousel - Desktop */}
