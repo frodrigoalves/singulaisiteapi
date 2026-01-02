@@ -1,8 +1,9 @@
-﻿import { useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/layout/container";
+import { WalletGenerator } from "@/components/auth/wallet-generator";
 import { useAuth } from "@/hooks/use-auth";
 import logo from "@/assets/logo-singulai.png";
 import {
@@ -10,12 +11,15 @@ import {
   Mail,
   ArrowLeft,
   Key,
+  ChevronRight,
   Plus,
   Loader2,
-  ChevronRight,
 } from "lucide-react";
 
+type AuthMethod = "import" | "create" | "email" | null;
+
 export default function ConnectPage() {
+  const [authMethod, setAuthMethod] = useState<AuthMethod>(null);
   const { isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -24,6 +28,10 @@ export default function ConnectPage() {
       navigate("/dashboard", { replace: true });
     }
   }, [isAuthenticated, loading, navigate]);
+
+  const handleWalletCreated = () => {
+    navigate("/auth");
+  };
 
   if (loading) {
     return (
@@ -46,57 +54,73 @@ export default function ConnectPage() {
             <img src={logo} alt="SingulAI" className="h-10 w-auto mx-auto mb-6" />
           </Link>
           <h1 className="text-h3 font-bold text-foreground mb-2">Bem-vindo ao SingulAI</h1>
-          <p className="text-muted-foreground">Conecte ou crie uma conta para continuar</p>
+          <p className="text-muted-foreground">Conecte ou crie uma wallet para continuar</p>
         </div>
 
         <GlassCard variant="glow" size="lg">
-          <div className="space-y-4">
-            <button
-              onClick={() => navigate("/auth")}
-              className="w-full flex items-center gap-4 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left group"
-            >
-              <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
-                <Key className="w-6 h-6 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-foreground">Importar Wallet</p>
-                <p className="text-sm text-muted-foreground">Use sua chave privada</p>
-              </div>
-              <ChevronRight className="w-5 h-5 text-muted-foreground" />
-            </button>
+          {!authMethod ? (
+            <div className="space-y-4">
+              <button
+                onClick={() => navigate("/auth")}
+                className="w-full flex items-center gap-4 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left group"
+              >
+                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                  <Key className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-foreground">Importar Wallet</p>
+                  <p className="text-sm text-muted-foreground">Use sua chave privada existente</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </button>
 
-            <button
-              onClick={() => navigate("/auth")}
-              className="w-full flex items-center gap-4 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left group"
-            >
-              <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
-                <Mail className="w-6 h-6 text-green-400" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-foreground">Email e Senha</p>
-                <p className="text-sm text-muted-foreground">Login tradicional</p>
-              </div>
-              <ChevronRight className="w-5 h-5 text-muted-foreground" />
-            </button>
+              <button
+                onClick={() => navigate("/auth")}
+                className="w-full flex items-center gap-4 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left group"
+              >
+                <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
+                  <Mail className="w-6 h-6 text-green-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-foreground">Email e Senha</p>
+                  <p className="text-sm text-muted-foreground">Login tradicional</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </button>
 
-            <div className="relative py-4">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/10" />
+              <div className="relative py-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/10" />
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="px-4 bg-card text-sm text-muted-foreground">ou</span>
+                </div>
               </div>
-              <div className="relative flex justify-center">
-                <span className="px-4 bg-card text-sm text-muted-foreground">ou</span>
-              </div>
+
+              <Button
+                variant="secondary"
+                className="w-full gap-2"
+                onClick={() => setAuthMethod("create")}
+              >
+                <Plus className="w-4 h-4" />
+                Criar nova wallet
+              </Button>
             </div>
+          ) : (
+            <WalletGenerator
+              onWalletCreated={handleWalletCreated}
+              onBack={() => setAuthMethod(null)}
+            />
+          )}
 
-            <Button
-              variant="secondary"
-              className="w-full gap-2"
-              onClick={() => navigate("/auth?create=true")}
+          {authMethod && (
+            <button
+              onClick={() => setAuthMethod(null)}
+              className="w-full text-center text-sm text-muted-foreground hover:text-foreground mt-6"
             >
-              <Plus className="w-4 h-4" />
-              Criar nova conta
-            </Button>
-          </div>
+              Voltar
+            </button>
+          )}
         </GlassCard>
 
         <div className="text-center mt-6">
