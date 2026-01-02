@@ -130,7 +130,7 @@ export function HeroSection() {
                           <img
                             src={currentCard.avatar}
                             alt={`${currentCard.name} Avatar`}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover object-top"
                           />
                         </div>
                         <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-md bg-gradient-to-br from-primary to-accent flex items-center justify-center">
@@ -215,7 +215,7 @@ export function HeroSection() {
                     <img
                       src={currentCard.avatar}
                       alt={`${currentCard.name} Avatar`}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover object-top"
                     />
                   </div>
                   <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-glow">
