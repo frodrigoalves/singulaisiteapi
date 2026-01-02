@@ -88,8 +88,8 @@ export function DashboardLayout() {
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-sidebar-border">
           {!sidebarCollapsed && (
-            <Link to="/">
-              <img src={logo} alt="SingulAI" className="h-8 w-auto" />
+            <Link to="/" className="logo-container">
+              <img src={logo} alt="SingulAI" className="h-7 w-auto logo-adaptive" />
             </Link>
           )}
           <Button
