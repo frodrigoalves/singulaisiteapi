@@ -70,13 +70,13 @@ export function HeroSection() {
     const interval = setInterval(() => {
       setIsAnimating(true);
       setTimeout(() => {
-        setCurrentIndex((prev) => (prev + 1) % avatarCards.length);
+        setCurrentIndex((prev) => (prev + 1) % 3);
         setIsAnimating(false);
       }, 300);
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [avatarCards.length]);
+  }, []);
 
   const currentCard = avatarCards[currentIndex];
   const IconComponent = currentCard.icon;
