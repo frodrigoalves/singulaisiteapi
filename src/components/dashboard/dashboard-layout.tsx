@@ -6,8 +6,6 @@ import { WalletButton } from "@/components/web3/wallet-button";
 import { useApp } from "@/contexts/app-context";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { useWalletAddress, useSglBalance } from "@/hooks/use-blockchain";
-import { useAccount, useDisconnect } from "wagmi";
 import logo from "@/assets/logo-singulai.png";
 import {
   LayoutGrid,
@@ -33,16 +31,8 @@ export function DashboardLayout() {
   const { language, setLanguage, t } = useApp();
   const { user, signOut } = useAuth();
   const { toast } = useToast();
-  
-  // Real wallet data from wagmi
-  const { address: walletAddress, isConnected } = useAccount();
-  const { disconnect } = useDisconnect();
-  const storedAddress = useWalletAddress();
-  const actualAddress = walletAddress || storedAddress;
-  const { data: sglBalance } = useSglBalance(actualAddress);
 
   const handleSignOut = async () => {
-    disconnect();
     const { error } = await signOut();
     if (error) {
       toast({
@@ -55,14 +45,6 @@ export function DashboardLayout() {
     }
   };
 
-  const handleDisconnectWallet = () => {
-    disconnect();
-    toast({
-      title: 'Wallet desconectada',
-      description: 'Sua wallet foi desconectada com sucesso.',
-    });
-  };
-
   const navItems = [
     { labelKey: "sidebar.overview", icon: LayoutGrid, href: "/dashboard" },
     { labelKey: "sidebar.tokens", icon: Coins, href: "/dashboard/tokens" },
@@ -73,8 +55,13 @@ export function DashboardLayout() {
     { labelKey: "sidebar.settings", icon: Settings, href: "/dashboard/settings" },
   ];
 
-  // Real wallet data
-  const balance = sglBalance?.formatted || "0.00";
+  // Mock wallet data
+  const walletData = {
+    isConnected: true,
+    address: "0x7F3a4B2c8D9E1f6A5B3C2D8E9F1A6B3C8D2E8B2c",
+    balance: "2,847.50",
+    network: "sepolia" as const,
+  };
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -218,25 +205,22 @@ export function DashboardLayout() {
               </Button>
 
               {/* Etherscan link */}
-              {actualAddress && (
-                <a
-                  href={`https://sepolia.etherscan.io/address/${actualAddress}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hidden md:flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <span>Etherscan</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              )}
+              <a
+                href={`https://sepolia.etherscan.io/address/${walletData.address}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden md:flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <span>Etherscan</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
 
               {/* Wallet */}
               <WalletButton
-                isConnected={isConnected || !!actualAddress}
-                address={actualAddress || undefined}
-                balance={balance}
-                network="sepolia"
-                onDisconnect={handleDisconnectWallet}
+                isConnected={walletData.isConnected}
+                address={walletData.address}
+                balance={walletData.balance}
+                network={walletData.network}
               />
             </div>
           </div>
