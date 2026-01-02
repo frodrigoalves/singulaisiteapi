@@ -317,6 +317,26 @@
   background: hsl(var(--muted-foreground) / 0.5);
 }
 
+/* Logo container with gradient backdrop for visibility across themes */
+.logo-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, hsl(0 0% 100% / 0.95) 0%, hsl(0 0% 92% / 0.9) 100%);
+  box-shadow: 0 2px 8px hsl(0 0% 0% / 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.theme-dark .logo-container,
+.theme-cyberpunk .logo-container {
+  background: linear-gradient(135deg, hsl(0 0% 20% / 0.9) 0%, hsl(0 0% 8% / 0.95) 100%);
+  box-shadow: 0 2px 12px hsl(0 0% 0% / 0.25);
+}
+
 /* Logo adaptive for themes */
 .theme-light .logo-adaptive {
   filter: brightness(0) saturate(100%) invert(0);

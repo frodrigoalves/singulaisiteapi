@@ -3,7 +3,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { AddressDisplay } from "./address-display";
 import { NetworkBadge } from "./network-badge";
-import { Wallet, ChevronDown } from "lucide-react";
+import { Wallet, ChevronDown, ExternalLink, Copy, RefreshCw, LogOut } from "lucide-react";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +36,20 @@ const WalletButton = React.forwardRef<HTMLDivElement, WalletButtonProps>(
     },
     ref
   ) => {
+    const handleCopyAddress = () => {
+      if (address) {
+        navigator.clipboard.writeText(address);
+        toast.success("Endereço copiado!");
+      }
+    };
+
+    const handleViewEtherscan = () => {
+      if (address) {
+        const networkDomain = network === "mainnet" ? "etherscan.io" : `${network}.etherscan.io`;
+        window.open(`https://${networkDomain}/address/${address}`, "_blank");
+      }
+    };
+
     if (!isConnected) {
       return (
         <Button
@@ -73,12 +88,21 @@ const WalletButton = React.forwardRef<HTMLDivElement, WalletButtonProps>(
               <AddressDisplay address={address || ""} size="sm" />
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View on Etherscan</DropdownMenuItem>
-            <DropdownMenuItem>Copy Address</DropdownMenuItem>
-            <DropdownMenuItem>Switch Wallet</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleViewEtherscan} className="gap-2 cursor-pointer">
+              <ExternalLink className="w-4 h-4" />
+              Ver no Etherscan
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleCopyAddress} className="gap-2 cursor-pointer">
+              <Copy className="w-4 h-4" />
+              Copiar Endereço
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={onDisconnect} className="text-destructive">
-              Disconnect
+            <DropdownMenuItem 
+              onClick={onDisconnect} 
+              className="gap-2 text-destructive cursor-pointer focus:text-destructive"
+            >
+              <LogOut className="w-4 h-4" />
+              Desconectar
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

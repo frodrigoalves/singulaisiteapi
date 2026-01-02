@@ -68,8 +68,8 @@ export function Header() {
       <Container size="xl">
         <nav className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3">
-            <img src={logo} alt="SingulAI" className="h-8 md:h-10 w-auto logo-adaptive" />
+          <Link to="/" className="flex items-center gap-3 logo-container">
+            <img src={logo} alt="SingulAI" className="h-7 md:h-9 w-auto logo-adaptive" />
           </Link>
 
           {/* Desktop Navigation */}
