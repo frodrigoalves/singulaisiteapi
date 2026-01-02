@@ -25,12 +25,12 @@ export default function ConnectPage() {
 
   useEffect(() => {
     if (isAuthenticated && !loading) {
-      navigate("/dashboard", { replace: true });
+      navigate('/dashboard', { replace: true });
     }
   }, [isAuthenticated, loading, navigate]);
 
   const handleWalletCreated = () => {
-    navigate("/auth");
+    navigate('/auth');
   };
 
   if (loading) {
@@ -54,28 +54,28 @@ export default function ConnectPage() {
             <img src={logo} alt="SingulAI" className="h-10 w-auto mx-auto mb-6" />
           </Link>
           <h1 className="text-h3 font-bold text-foreground mb-2">Bem-vindo ao SingulAI</h1>
-          <p className="text-muted-foreground">Conecte ou crie uma wallet para continuar</p>
+          <p className="text-muted-foreground">Conecte ou crie uma carteira para continuar</p>
         </div>
 
         <GlassCard variant="glow" size="lg">
           {!authMethod ? (
             <div className="space-y-4">
               <button
-                onClick={() => navigate("/auth")}
+                onClick={() => navigate('/auth')}
                 className="w-full flex items-center gap-4 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left group"
               >
                 <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
                   <Key className="w-6 h-6 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium text-foreground">Importar Wallet</p>
-                  <p className="text-sm text-muted-foreground">Use sua chave privada existente</p>
+                  <p className="font-medium text-foreground">Importar Carteira</p>
+                  <p className="text-sm text-muted-foreground">Usar chave privada existente</p>
                 </div>
                 <ChevronRight className="w-5 h-5 text-muted-foreground" />
               </button>
 
               <button
-                onClick={() => navigate("/auth")}
+                onClick={() => navigate('/auth')}
                 className="w-full flex items-center gap-4 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left group"
               >
                 <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
@@ -103,7 +103,7 @@ export default function ConnectPage() {
                 onClick={() => setAuthMethod("create")}
               >
                 <Plus className="w-4 h-4" />
-                Criar nova wallet
+                Nao tenho wallet - Criar nova
               </Button>
             </div>
           ) : (
@@ -118,7 +118,7 @@ export default function ConnectPage() {
               onClick={() => setAuthMethod(null)}
               className="w-full text-center text-sm text-muted-foreground hover:text-foreground mt-6"
             >
-              Voltar
+              Voltar as opcoes
             </button>
           )}
         </GlassCard>

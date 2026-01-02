@@ -1,24 +1,28 @@
-﻿// Configuracao de rede blockchain
-export const CHAIN_CONFIG = {
-  // Base Mainnet
-  chainId: 8453,
-  chainName: "Base",
-  rpcUrl: "https://mainnet.base.org",
-  explorerUrl: "https://basescan.org",
-  nativeCurrency: {
-    name: "Ethereum",
-    symbol: "ETH",
-    decimals: 18,
+﻿// Configuracao simplificada - sem RainbowKit
+export const SUPPORTED_CHAINS = {
+  BASE_MAINNET: {
+    id: 8453,
+    name: "Base",
+    rpcUrl: "https://mainnet.base.org",
+    explorer: "https://basescan.org",
+  },
+  BASE_SEPOLIA: {
+    id: 84532,
+    name: "Base Sepolia",
+    rpcUrl: "https://sepolia.base.org",
+    explorer: "https://sepolia.basescan.org",
   },
 };
 
-// Contrato do Token SGL (atualizar com endereco real quando deployar)
 export const SGL_TOKEN = {
-  address: "0x0000000000000000000000000000000000000000", // TODO: Atualizar
-  decimals: 18,
   symbol: "SGL",
   name: "SingulAI Token",
+  decimals: 18,
+  // Endereco do contrato (atualizar quando deployar)
+  address: {
+    [SUPPORTED_CHAINS.BASE_MAINNET.id]: "0x...", // Mainnet
+    [SUPPORTED_CHAINS.BASE_SEPOLIA.id]: "0x...", // Testnet
+  },
 };
 
-// API Backend
-export const API_URL = "https://api.singulai.site";
+export const DEFAULT_CHAIN = SUPPORTED_CHAINS.BASE_SEPOLIA;

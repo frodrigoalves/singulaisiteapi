@@ -1,65 +1,39 @@
-﻿import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { supabase } from "@/integrations/supabase/client";
+﻿import { ReactNode, createContext, useContext, useState } from 'react';
 
 interface WalletContextType {
   address: string | null;
   isConnected: boolean;
-  balance: string;
   connect: (address: string) => void;
   disconnect: () => void;
 }
 
-const WalletContext = createContext<WalletContextType | null>(null);
+const WalletContext = createContext<WalletContextType>({
+  address: null,
+  isConnected: false,
+  connect: () => {},
+  disconnect: () => {},
+});
 
-export function useWallet() {
-  const context = useContext(WalletContext);
-  if (!context) {
-    throw new Error("useWallet must be used within Web3Provider");
-  }
-  return context;
-}
+export const useWallet = () => useContext(WalletContext);
 
 interface Web3ProviderProps {
   children: ReactNode;
 }
 
 export function Web3Provider({ children }: Web3ProviderProps) {
-  const [address, setAddress] = useState<string | null>(null);
-  const [balance, setBalance] = useState("0");
-
-  // Carregar wallet do usuario logado
-  useEffect(() => {
-    async function loadWallet() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("wallet_address")
-          .eq("user_id", user.id)
-          .single();
-        
-        if (profile?.wallet_address) {
-          setAddress(profile.wallet_address);
-        }
-      }
-    }
-    loadWallet();
-
-    // Listener para mudancas de auth
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      loadWallet();
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const [address, setAddress] = useState<string | null>(() => {
+    // Recuperar do localStorage se existir
+    return localStorage.getItem('wallet_address');
+  });
 
   const connect = (walletAddress: string) => {
     setAddress(walletAddress);
+    localStorage.setItem('wallet_address', walletAddress);
   };
 
   const disconnect = () => {
     setAddress(null);
-    setBalance("0");
+    localStorage.removeItem('wallet_address');
   };
 
   return (
@@ -67,7 +41,6 @@ export function Web3Provider({ children }: Web3ProviderProps) {
       value={{
         address,
         isConnected: !!address,
-        balance,
         connect,
         disconnect,
       }}
