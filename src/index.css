@@ -151,6 +151,7 @@
 
   html {
     scroll-behavior: smooth;
+    font-size: 75%; /* Reduz escala geral em 25% (de 16px para 12px base) */
   }
 
   body {
