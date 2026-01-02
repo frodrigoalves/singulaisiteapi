@@ -82,7 +82,7 @@ export function HeroSection() {
   const IconComponent = currentCard.icon;
 
   return (
-    <section className="relative min-h-screen flex items-center pt-16 md:pt-20 overflow-hidden">
+    <section className="relative min-h-screen flex items-center overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-muted/20" />
@@ -97,76 +97,82 @@ export function HeroSection() {
         />
       </div>
 
-      <Container size="xl" className="py-4 md:py-32">
-        <div className="grid lg:grid-cols-2 gap-6 lg:gap-16 items-center">
-          {/* Content + Mobile Avatar */}
-          <div className="space-y-4 md:space-y-8">
-            {/* Mobile: Title + Avatar side by side */}
-            <div className="flex gap-4 md:block items-start">
-              {/* Text content */}
-              <div className="flex-1 space-y-3 md:space-y-6">
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 md:px-4 md:py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] md:text-sm font-medium">
-                  <Shield className="w-3 h-3 md:w-4 md:h-4" />
-                  {t("hero.badge")}
-                </div>
-                
-                <h1 className="font-heading text-2xl leading-[1.1] sm:text-4xl md:text-h1 lg:text-display text-foreground md:leading-[1.05] tracking-[-0.02em] md:tracking-[-0.03em]">
+      <Container size="xl" className="pt-20 pb-8 md:py-32">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          
+          {/* Left Column - Content */}
+          <div className="space-y-6 md:space-y-8">
+            
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs md:text-sm font-medium">
+              <Shield className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              {t("hero.badge")}
+            </div>
+            
+            {/* Mobile Layout: Title + Avatar side by side */}
+            <div className="flex items-start gap-6 md:block">
+              {/* Title */}
+              <div className="flex-1">
+                <h1 className="font-heading text-[28px] leading-[1.08] sm:text-4xl md:text-h1 lg:text-display text-foreground md:leading-[1.05] tracking-[-0.02em] md:tracking-[-0.03em]">
                   <span className="block font-semibold">{t("hero.title1")}</span>
                   <span className="block font-semibold text-gradient">{t("hero.title2")}</span>
                   <span className="block font-semibold text-muted-foreground">{t("hero.title3")}</span>
                 </h1>
-                
-                <p className="text-sm md:text-body-lg text-muted-foreground max-w-xl hidden md:block leading-relaxed">
-                  {t("hero.description")}
-                </p>
               </div>
 
-              {/* Mobile Avatar - inline with title */}
+              {/* Mobile Avatar Card */}
               <div className="flex-shrink-0 md:hidden">
                 <div className={`transition-all duration-300 ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
-                  <div className="relative">
-                    <div className="w-20 h-20 rounded-xl overflow-hidden border-2 border-primary/30 shadow-glow">
-                      <img
-                        src={currentCard.avatar}
-                        alt={`${currentCard.name} Avatar`}
-                        className="w-full h-full object-cover"
-                      />
+                  <GlassCard size="sm" className="p-3 w-[104px]">
+                    <div className="flex flex-col items-center">
+                      <div className="relative mb-2">
+                        <div className="w-16 h-16 rounded-xl overflow-hidden border border-primary/30">
+                          <img
+                            src={currentCard.avatar}
+                            alt={`${currentCard.name} Avatar`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-md bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                          <IconComponent className="w-2.5 h-2.5 text-white" />
+                        </div>
+                      </div>
+                      <p className="text-[11px] font-medium text-foreground truncate w-full text-center">{currentCard.name.split('.')[0]}</p>
+                      <p className="text-[9px] text-muted-foreground">.singulai</p>
+                      
+                      {/* Indicators */}
+                      <div className="flex justify-center gap-1 mt-2">
+                        {avatarCards.map((_, index) => (
+                          <button
+                            key={index}
+                            onClick={() => {
+                              setIsAnimating(true);
+                              setTimeout(() => {
+                                setCurrentIndex(index);
+                                setIsAnimating(false);
+                              }, 300);
+                            }}
+                            className={`h-1 rounded-full transition-all duration-300 ${
+                              index === currentIndex 
+                                ? 'bg-primary w-3' 
+                                : 'bg-muted-foreground/30 w-1'
+                            }`}
+                            aria-label={`Go to avatar ${index + 1}`}
+                          />
+                        ))}
+                      </div>
                     </div>
-                    <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-md bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
-                      <IconComponent className="w-3 h-3 text-white" />
-                    </div>
-                  </div>
-                  <p className="text-[10px] font-medium text-center text-foreground mt-1.5 truncate w-20">{currentCard.name}</p>
-                  {/* Indicators */}
-                  <div className="flex justify-center gap-1 mt-1.5">
-                    {avatarCards.map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => {
-                          setIsAnimating(true);
-                          setTimeout(() => {
-                            setCurrentIndex(index);
-                            setIsAnimating(false);
-                          }, 300);
-                        }}
-                        className={`h-1 rounded-full transition-all duration-300 ${
-                          index === currentIndex 
-                            ? 'bg-primary w-3' 
-                            : 'bg-muted-foreground/30 w-1'
-                        }`}
-                        aria-label={`Go to avatar ${index + 1}`}
-                      />
-                    ))}
-                  </div>
+                  </GlassCard>
                 </div>
               </div>
             </div>
 
-            {/* Mobile description */}
-            <p className="text-xs text-muted-foreground max-w-xl md:hidden leading-relaxed -mt-1">
+            {/* Description */}
+            <p className="text-sm md:text-body-lg text-muted-foreground max-w-xl leading-relaxed">
               {t("hero.description")}
             </p>
 
+            {/* CTA Buttons */}
             <div className="flex flex-wrap gap-3 md:gap-4">
               <Link to="/connect">
                 <Button variant="hero" size="default" className="text-sm md:text-base h-11 md:h-12 px-5 md:px-6">
@@ -181,21 +187,20 @@ export function HeroSection() {
               </a>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-4 pt-5 md:pt-8 border-t border-border">
+            {/* Stats - 8pt grid aligned */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-4 md:gap-6 pt-6 md:pt-8 border-t border-border">
               {stats.map((stat) => (
-                <div key={stat.label} className="space-y-1 md:space-y-1">
-                  <p className="text-xl md:text-h4 font-bold text-foreground">{stat.value}</p>
-                  <p className="text-xs md:text-caption text-muted-foreground">{stat.label}</p>
+                <div key={stat.label}>
+                  <p className="text-xl md:text-h4 font-bold text-foreground leading-tight">{stat.value}</p>
+                  <p className="text-[11px] md:text-caption text-muted-foreground mt-0.5">{stat.label}</p>
                 </div>
               ))}
             </div>
           </div>
 
 
-          {/* Visual - Avatar Carousel - Desktop */}
+          {/* Right Column - Desktop Avatar Carousel */}
           <div className="relative lg:pl-8 hidden md:block">
-            {/* Main avatar card */}
             <GlassCard variant="glow" size="lg" className="relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-accent to-primary" />
               
@@ -273,7 +278,7 @@ export function HeroSection() {
               </div>
             </GlassCard>
 
-            {/* Floating elements - hidden on mobile */}
+            {/* Floating elements */}
             <div className="absolute -top-4 -left-4 animate-float hidden lg:block" style={{ animationDelay: "0.5s" }}>
               <GlassCard size="sm" className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
