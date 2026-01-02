@@ -3,8 +3,8 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AddressDisplay } from "@/components/web3/address-display";
-import { useWeb3 } from "@/providers/web3-provider";
 import { useAuth } from "@/hooks/use-auth";
+import { useWalletAddress, useTokenBalance } from "@/hooks/use-blockchain";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -16,12 +16,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Send,
-  ArrowUpRight,
-  ArrowDownLeft,
-  ExternalLink,
   Coins,
-  TrendingUp,
+  Send,
+  ArrowDownLeft,
+  ArrowUpRight,
+  ExternalLink,
   Loader2,
   Wallet,
   RefreshCw,
@@ -33,127 +32,83 @@ interface Transaction {
   from_address: string;
   to_address: string;
   amount: string;
+  tx_hash: string;
   created_at: string;
-  tx_hash: string | null;
 }
 
 export default function TokensPage() {
-  const { address, isConnected } = useWeb3();
   const { user } = useAuth();
+  const { address, loading: addressLoading } = useWalletAddress();
+  const { balance, loading: balanceLoading } = useTokenBalance();
   const { toast } = useToast();
 
-  const [balance, setBalance] = useState("0.00");
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
+  const [sending, setSending] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [transferring, setTransferring] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const [loadingTx, setLoadingTx] = useState(true);
 
-  // Carregar dados do usuario
+  // Carregar transacoes do Supabase
   useEffect(() => {
-    if (user) {
-      loadUserData();
+    async function loadTransactions() {
+      if (!user) return;
+
+      try {
+        const { data, error } = await supabase
+          .from("transactions")
+          .select("*")
+          .or(`from_user_id.eq.${user.id},to_user_id.eq.${user.id}`)
+          .order("created_at", { ascending: false })
+          .limit(10);
+
+        if (data) {
+          setTransactions(
+            data.map((tx: any) => ({
+              id: tx.id,
+              type: tx.from_user_id === user.id ? "send" : "receive",
+              from_address: tx.from_address || "Unknown",
+              to_address: tx.to_address || "Unknown",
+              amount: tx.amount,
+              tx_hash: tx.tx_hash || "",
+              created_at: tx.created_at,
+            }))
+          );
+        }
+      } catch (error) {
+        console.error("Error loading transactions:", error);
+      } finally {
+        setLoadingTx(false);
+      }
     }
+
+    loadTransactions();
   }, [user]);
 
-  const loadUserData = async () => {
-    if (!user) return;
-    
-    setLoading(true);
-    try {
-      // Buscar perfil com saldo
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("sgl_balance, wallet_address")
-        .eq("user_id", user.id)
-        .single();
-
-      if (profile) {
-        setBalance(profile.sgl_balance?.toLocaleString() || "0.00");
-      }
-
-      // Buscar transacoes
-      const { data: txs } = await supabase
-        .from("transactions")
-        .select("*")
-        .or(`from_user_id.eq.${user.id},to_user_id.eq.${user.id}`)
-        .order("created_at", { ascending: false })
-        .limit(10);
-
-      if (txs) {
-        setTransactions(txs.map(tx => ({
-          id: tx.id,
-          type: tx.from_user_id === user.id ? "send" : "receive",
-          from_address: tx.from_address || "Unknown",
-          to_address: tx.to_address || "Unknown",
-          amount: tx.amount?.toString() || "0",
-          created_at: tx.created_at,
-          tx_hash: tx.tx_hash,
-        })));
-      }
-    } catch (error) {
-      console.error("Error loading data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await loadUserData();
-    setRefreshing(false);
-    toast({
-      title: "Atualizado!",
-      description: "Dados atualizados com sucesso.",
-    });
-  };
-
   const handleTransfer = async () => {
-    if (!recipient || !amount || !user) {
+    if (!recipient || !amount) {
       toast({
         title: "Erro",
-        description: "Preencha todos os campos.",
+        description: "Preencha todos os campos",
         variant: "destructive",
       });
       return;
     }
 
-    setTransferring(true);
+    setSending(true);
     try {
-      // Aqui voce pode chamar sua API de transferencia
-      const response = await fetch("https://api.singulai.site/transfer", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
-        body: JSON.stringify({
-          to_address: recipient,
-          amount: parseFloat(amount),
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Transfer failed");
-      }
-
+      // TODO: Implementar transferencia real via blockchain
       toast({
-        title: "Transferencia enviada!",
-        description: `${amount} SGL enviados para ${recipient.slice(0, 6)}...${recipient.slice(-4)}`,
+        title: "Em desenvolvimento",
+        description: "Transferencias serao habilitadas em breve!",
       });
-
-      setRecipient("");
-      setAmount("");
-      await loadUserData();
     } catch (error) {
       toast({
-        title: "Erro na transferencia",
-        description: "Nao foi possivel completar a transferencia.",
+        title: "Erro",
+        description: "Falha ao enviar transacao",
         variant: "destructive",
       });
     } finally {
-      setTransferring(false);
+      setSending(false);
     }
   };
 
@@ -161,69 +116,71 @@ export default function TokensPage() {
     return new Date(dateString).toLocaleDateString("pt-BR");
   };
 
-  const formatAddress = (addr: string) => {
-    if (!addr || addr.length < 10) return addr;
+  const truncateHash = (hash: string) => {
+    if (!hash) return "-";
+    return `${hash.slice(0, 6)}...${hash.slice(-4)}`;
+  };
+
+  const truncateAddress = (addr: string) => {
+    if (!addr || addr === "Unknown") return "Desconhecido";
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-h3 font-bold text-foreground">Tokens</h1>
-          <p className="text-muted-foreground mt-1">Gerencie seus tokens SGL</p>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleRefresh}
-          disabled={refreshing}
-        >
-          <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
-          Atualizar
-        </Button>
+      <div>
+        <h1 className="text-h3 font-bold text-foreground">Tokens</h1>
+        <p className="text-muted-foreground mt-1">Gerencie seus tokens SGL</p>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid gap-6 lg:grid-cols-3">
         {/* Balance Card */}
-        <GlassCard variant="glow" size="lg">
-          <div className="flex items-center gap-3 mb-4">
+        <GlassCard variant="glow" size="lg" className="lg:col-span-1">
+          <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
               <Coins className="w-6 h-6 text-primary" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Saldo SGL</p>
-              <p className="text-2xl font-bold text-foreground">{balance}</p>
+              {balanceLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <p className="text-2xl font-bold text-foreground">{balance}</p>
+              )}
             </div>
           </div>
-          
-          {address && (
-            <div className="pt-4 border-t border-white/10">
-              <p className="text-xs text-muted-foreground mb-2">Sua carteira</p>
-              <AddressDisplay address={address} />
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Valor em USD</span>
+              <span className="text-foreground">$0.00</span>
             </div>
-          )}
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Rede</span>
+              <span className="text-foreground">Base</span>
+            </div>
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-white/10">
+            <p className="text-sm text-muted-foreground mb-2">Sua Carteira</p>
+            {addressLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : address ? (
+              <AddressDisplay address={address} />
+            ) : (
+              <p className="text-sm text-muted-foreground">Nenhuma carteira conectada</p>
+            )}
+          </div>
         </GlassCard>
 
         {/* Transfer Card */}
         <GlassCard variant="default" size="lg" className="lg:col-span-2">
-          <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-            <Send className="w-5 h-5" />
-            Transferir SGL
-          </h3>
+          <h3 className="text-lg font-semibold text-foreground mb-6">Transferir SGL</h3>
 
           <div className="space-y-4">
             <div>
               <label className="text-sm text-muted-foreground mb-2 block">
-                Endereco do destinatario
+                Endereco do Destinatario
               </label>
               <Input
                 placeholder="0x..."
@@ -234,9 +191,7 @@ export default function TokensPage() {
             </div>
 
             <div>
-              <label className="text-sm text-muted-foreground mb-2 block">
-                Quantidade
-              </label>
+              <label className="text-sm text-muted-foreground mb-2 block">Quantidade</label>
               <div className="relative">
                 <Input
                   type="number"
@@ -249,32 +204,37 @@ export default function TokensPage() {
                   variant="ghost"
                   size="sm"
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-primary"
-                  onClick={() => setAmount(balance.replace(/,/g, "").replace(/\./g, ""))}
+                  onClick={() => setAmount(balance.replace(/,/g, ""))}
                 >
                   MAX
                 </Button>
               </div>
             </div>
 
+            <div className="p-3 rounded-lg bg-secondary/30 text-sm text-muted-foreground">
+              Gas estimado: 0.002 ETH
+            </div>
+
             <Button
-              variant="default"
+              variant="hero"
               size="lg"
               className="w-full gap-2"
               onClick={handleTransfer}
-              disabled={transferring || !recipient || !amount}
+              disabled={sending || !address}
             >
-              {transferring ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Transferindo...
-                </>
+              {sending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <>
-                  <Send className="w-4 h-4" />
-                  Transferir
-                </>
+                <Send className="w-4 h-4" />
               )}
+              {sending ? "Enviando..." : "Transferir"}
             </Button>
+
+            {!address && (
+              <p className="text-sm text-center text-muted-foreground">
+                Conecte uma carteira para transferir
+              </p>
+            )}
           </div>
         </GlassCard>
       </div>
@@ -282,14 +242,20 @@ export default function TokensPage() {
       {/* Transaction History */}
       <GlassCard variant="default" size="default">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-foreground">
-            Historico de Transacoes
-          </h3>
+          <h3 className="text-lg font-semibold text-foreground">Historico de Transacoes</h3>
+          <Button variant="outline" size="sm" className="gap-2">
+            <RefreshCw className="w-4 h-4" />
+            Atualizar
+          </Button>
         </div>
 
-        {transactions.length === 0 ? (
+        {loadingTx ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          </div>
+        ) : transactions.length === 0 ? (
           <div className="text-center py-12">
-            <Wallet className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <Wallet className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
             <p className="text-muted-foreground">Nenhuma transacao encontrada</p>
             <p className="text-sm text-muted-foreground mt-1">
               Suas transacoes aparecerao aqui
@@ -304,7 +270,7 @@ export default function TokensPage() {
                 <TableHead>Para</TableHead>
                 <TableHead>Quantidade</TableHead>
                 <TableHead>Data</TableHead>
-                <TableHead>Tx Hash</TableHead>
+                <TableHead>Hash</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -320,10 +286,10 @@ export default function TokensPage() {
                     </div>
                   </TableCell>
                   <TableCell className="font-mono text-sm">
-                    {formatAddress(tx.from_address)}
+                    {truncateAddress(tx.from_address)}
                   </TableCell>
                   <TableCell className="font-mono text-sm">
-                    {formatAddress(tx.to_address)}
+                    {truncateAddress(tx.to_address)}
                   </TableCell>
                   <TableCell
                     className={
@@ -346,7 +312,7 @@ export default function TokensPage() {
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 font-mono text-sm text-muted-foreground hover:text-foreground"
                       >
-                        {formatAddress(tx.tx_hash)}
+                        {truncateHash(tx.tx_hash)}
                         <ExternalLink className="w-3 h-3" />
                       </a>
                     ) : (

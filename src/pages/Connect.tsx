@@ -1,11 +1,8 @@
-﻿import { useState, useEffect } from "react";
+﻿import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Container } from "@/components/layout/container";
-import { WalletGenerator } from "@/components/auth/wallet-generator";
-import { WalletImport } from "@/components/auth/wallet-import";
 import { useAuth } from "@/hooks/use-auth";
 import logo from "@/assets/logo-singulai.png";
 import {
@@ -13,76 +10,31 @@ import {
   Mail,
   ArrowLeft,
   Key,
-  ChevronRight,
   Plus,
   Loader2,
-  Download,
+  ChevronRight,
 } from "lucide-react";
 
-type AuthMethod = "import" | "email" | "create" | null;
-
 export default function ConnectPage() {
-  const [authMethod, setAuthMethod] = useState<AuthMethod>(null);
   const { isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
 
-  // Redirecionar se ja autenticado
   useEffect(() => {
     if (isAuthenticated && !loading) {
       navigate("/dashboard", { replace: true });
     }
   }, [isAuthenticated, loading, navigate]);
 
-  const handleWalletCreated = () => {
-    navigate("/auth");
-  };
-
-  const handleWalletImported = () => {
-    navigate("/dashboard", { replace: true });
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-muted-foreground">Carregando...</p>
       </div>
     );
   }
 
-  const renderImportWallet = () => (
-    <WalletImport
-      onSuccess={handleWalletImported}
-      onBack={() => setAuthMethod(null)}
-    />
-  );
-
-  const renderEmailLogin = () => (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-foreground mb-4">Login por Email</h3>
-      <p className="text-sm text-muted-foreground mb-4">
-        Use seu email e senha para acessar sua conta
-      </p>
-      <Button variant="hero" className="w-full gap-2" onClick={() => navigate("/auth")}>
-        <Mail className="w-4 h-4" />
-        Ir para Login
-      </Button>
-      <p className="text-xs text-muted-foreground text-center">
-        Faca login ou crie sua conta
-      </p>
-    </div>
-  );
-
-  const renderCreateWallet = () => (
-    <WalletGenerator
-      onWalletCreated={handleWalletCreated}
-      onBack={() => setAuthMethod(null)}
-    />
-  );
-
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      {/* Background effects */}
       <div className="fixed inset-0 -z-10">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[128px]" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/20 rounded-full blur-[128px]" />
@@ -94,80 +46,59 @@ export default function ConnectPage() {
             <img src={logo} alt="SingulAI" className="h-10 w-auto mx-auto mb-6" />
           </Link>
           <h1 className="text-h3 font-bold text-foreground mb-2">Bem-vindo ao SingulAI</h1>
-          <p className="text-muted-foreground">Conecte ou crie uma carteira para continuar</p>
+          <p className="text-muted-foreground">Conecte ou crie uma conta para continuar</p>
         </div>
 
         <GlassCard variant="glow" size="lg">
-          {!authMethod ? (
-            <div className="space-y-4">
-              {/* Importar Wallet com Chave Privada */}
-              <button
-                onClick={() => setAuthMethod("import")}
-                className="w-full flex items-center gap-4 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left group"
-              >
-                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
-                  <Key className="w-6 h-6 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-foreground">Importar Wallet</p>
-                  <p className="text-sm text-muted-foreground">Usar chave privada existente</p>
-                </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground" />
-              </button>
-
-              {/* Login por Email */}
-              <button
-                onClick={() => setAuthMethod("email")}
-                className="w-full flex items-center gap-4 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left group"
-              >
-                <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
-                  <Mail className="w-6 h-6 text-green-400" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-foreground">Email e Senha</p>
-                  <p className="text-sm text-muted-foreground">Login tradicional</p>
-                </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground" />
-              </button>
-
-              <div className="relative py-4">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-white/10" />
-                </div>
-                <div className="relative flex justify-center">
-                  <span className="px-4 bg-card text-sm text-muted-foreground">ou</span>
-                </div>
-              </div>
-
-              {/* Criar Nova Wallet */}
-              <Button
-                variant="secondary"
-                className="w-full gap-2"
-                onClick={() => setAuthMethod("create")}
-              >
-                <Plus className="w-4 h-4" />
-                Nao tenho wallet - Criar nova
-              </Button>
-            </div>
-          ) : authMethod === "import" ? (
-            renderImportWallet()
-          ) : authMethod === "email" ? (
-            renderEmailLogin()
-          ) : (
-            renderCreateWallet()
-          )}
-
-          {authMethod && authMethod !== "create" && authMethod !== "import" && (
+          <div className="space-y-4">
             <button
-              onClick={() => setAuthMethod(null)}
-              className="w-full text-center text-sm text-muted-foreground hover:text-foreground mt-6"
+              onClick={() => navigate("/auth")}
+              className="w-full flex items-center gap-4 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left group"
             >
-              Voltar as opcoes
+              <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                <Key className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-foreground">Importar Wallet</p>
+                <p className="text-sm text-muted-foreground">Use sua chave privada</p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
             </button>
-          )}
+
+            <button
+              onClick={() => navigate("/auth")}
+              className="w-full flex items-center gap-4 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left group"
+            >
+              <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
+                <Mail className="w-6 h-6 text-green-400" />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-foreground">Email e Senha</p>
+                <p className="text-sm text-muted-foreground">Login tradicional</p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
+            </button>
+
+            <div className="relative py-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/10" />
+              </div>
+              <div className="relative flex justify-center">
+                <span className="px-4 bg-card text-sm text-muted-foreground">ou</span>
+              </div>
+            </div>
+
+            <Button
+              variant="secondary"
+              className="w-full gap-2"
+              onClick={() => navigate("/auth?create=true")}
+            >
+              <Plus className="w-4 h-4" />
+              Criar nova conta
+            </Button>
+          </div>
         </GlassCard>
 
-        {/* Back to Home Link */}
         <div className="text-center mt-6">
           <Link
             to="/"
