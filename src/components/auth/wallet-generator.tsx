@@ -15,8 +15,27 @@ import {
   ArrowRight,
   RefreshCw,
   Shield,
+  Globe,
+  Coins,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// Network configuration
+const NETWORK_CONFIG = {
+  name: 'Sepolia Testnet',
+  chainId: 11155111,
+  rpcUrl: 'https://ethereum-sepolia-rpc.publicnode.com',
+  symbol: 'ETH',
+  blockExplorer: 'https://sepolia.etherscan.io',
+};
+
+// Token configuration
+const TOKEN_CONFIG = {
+  name: 'SingulAI Token',
+  symbol: 'SGL',
+  address: import.meta.env.VITE_SGL_TOKEN_ADDRESS || '0xF281a68ae5Baf227bADC1245AC5F9B2F53b7EDe1',
+  decimals: 18,
+};
 
 interface WalletData {
   mnemonic: string;
@@ -97,8 +116,12 @@ export function WalletGenerator({ onWalletCreated, onBack }: WalletGeneratorProp
   const downloadWalletData = useCallback(() => {
     if (!walletData) return;
 
-    const content = `SingulAI Wallet - GUARDE EM LOCAL SEGURO
-========================================
+    const content = `╔══════════════════════════════════════════════════════════════╗
+║              SingulAI Wallet - GUARDE EM LOCAL SEGURO         ║
+╚══════════════════════════════════════════════════════════════╝
+
+📋 INFORMAÇÕES DA WALLET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Endereço da Wallet:
 ${walletData.address}
@@ -109,14 +132,47 @@ ${walletData.mnemonic}
 Chave Privada:
 ${walletData.privateKey}
 
-========================================
-IMPORTANTE:
-- NUNCA compartilhe sua chave privada ou frase de recuperação
-- Guarde este arquivo em local seguro (offline)
-- Qualquer pessoa com acesso a esses dados pode roubar seus fundos
-- SingulAI NUNCA pedirá sua chave privada
-========================================
+🌐 CONFIGURAÇÃO DE REDE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+Rede: ${NETWORK_CONFIG.name}
+Chain ID: ${NETWORK_CONFIG.chainId}
+RPC URL: ${NETWORK_CONFIG.rpcUrl}
+Símbolo: ${NETWORK_CONFIG.symbol}
+Block Explorer: ${NETWORK_CONFIG.blockExplorer}
+
+🪙 TOKEN SGL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Nome: ${TOKEN_CONFIG.name}
+Símbolo: ${TOKEN_CONFIG.symbol}
+Contrato: ${TOKEN_CONFIG.address}
+Decimais: ${TOKEN_CONFIG.decimals}
+
+📱 COMO IMPORTAR NO METAMASK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Abra o MetaMask e clique em "Importar Conta"
+2. Selecione "Frase de Recuperação" ou "Chave Privada"
+3. Cole as informações acima
+4. Adicione a rede Sepolia:
+   - Nome: ${NETWORK_CONFIG.name}
+   - RPC URL: ${NETWORK_CONFIG.rpcUrl}
+   - Chain ID: ${NETWORK_CONFIG.chainId}
+   - Símbolo: ${NETWORK_CONFIG.symbol}
+5. Adicione o token SGL:
+   - Clique em "Importar tokens"
+   - Endereço do contrato: ${TOKEN_CONFIG.address}
+
+⚠️ IMPORTANTE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+• NUNCA compartilhe sua chave privada ou frase de recuperação
+• Guarde este arquivo em local seguro (offline)
+• Qualquer pessoa com acesso a esses dados pode roubar seus fundos
+• SingulAI NUNCA pedirá sua chave privada
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Gerado em: ${new Date().toISOString()}
 `;
 
@@ -212,10 +268,58 @@ Gerado em: ${new Date().toISOString()}
             </p>
           </div>
 
+          {/* Network & Token Info */}
+          <div className="grid grid-cols-2 gap-3">
+            <GlassCard variant="default" size="sm" className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-primary" />
+                <span className="text-xs font-medium text-muted-foreground">Rede</span>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">{NETWORK_CONFIG.name}</p>
+                <p className="text-xs text-muted-foreground">Chain ID: {NETWORK_CONFIG.chainId}</p>
+              </div>
+            </GlassCard>
+
+            <GlassCard variant="default" size="sm" className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Coins className="w-4 h-4 text-primary" />
+                <span className="text-xs font-medium text-muted-foreground">Token</span>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">{TOKEN_CONFIG.symbol}</p>
+                <p className="text-xs text-muted-foreground">{TOKEN_CONFIG.name}</p>
+              </div>
+            </GlassCard>
+          </div>
+
+          {/* Token Contract */}
+          <GlassCard variant="default" size="sm" className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-muted-foreground">Contrato SGL</span>
+              <Badge variant="outline" className="gap-1 text-xs">
+                <Coins className="w-3 h-3" />
+                Token
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 text-xs font-mono bg-secondary/50 p-2 rounded break-all">
+                {TOKEN_CONFIG.address}
+              </code>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => copyToClipboard(TOKEN_CONFIG.address, 'Contrato SGL')}
+              >
+                <Copy className="w-4 h-4" />
+              </Button>
+            </div>
+          </GlassCard>
+
           {/* Wallet Address */}
           <GlassCard variant="default" size="sm" className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">Endereço</span>
+              <span className="text-sm font-medium text-muted-foreground">Seu Endereço</span>
               <Badge variant="outline" className="gap-1">
                 <Shield className="w-3 h-3" />
                 Público
