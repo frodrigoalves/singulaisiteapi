@@ -8,100 +8,96 @@ import { useApp } from "@/contexts/app-context";
 import lauraAvatar from "@/assets/avatars/laura.png";
 import leticiaAvatar from "@/assets/avatars/leticia.png";
 import pedroAvatar from "@/assets/avatars/pedro.png";
-
 export function HeroSection() {
-  const { t } = useApp();
+  const {
+    t
+  } = useApp();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
-
-  const stats = [
-    { label: t("hero.tvl"), value: "$2.4M" },
-    { label: t("hero.avatars"), value: "12,847" },
-    { label: t("hero.tokens"), value: "847M" },
-    { label: t("hero.legacy"), value: "3,291" },
-  ];
-
-  const avatarCards = [
-    {
-      id: 1,
-      avatar: lauraAvatar,
-      name: "Laura.singulai",
-      wallet: "0x7F3a...8B2c",
-      icon: Heart,
-      title: t("avatar.familyLegacy"),
-      description: t("avatar.familyDesc"),
-      tag: t("avatar.personal"),
-      tagColor: "bg-pink-500/20 text-pink-400",
-      tokens: "2,847",
-      nfts: "3",
-      apy: "12%",
-    },
-    {
-      id: 2,
-      avatar: leticiaAvatar,
-      name: "Leticia.singulai",
-      wallet: "0x4D2e...9A1f",
-      icon: Briefcase,
-      title: t("avatar.mentor"),
-      description: t("avatar.mentorDesc"),
-      tag: t("avatar.business"),
-      tagColor: "bg-blue-500/20 text-blue-400",
-      tokens: "15,420",
-      nfts: "8",
-      apy: "18%",
-    },
-    {
-      id: 3,
-      avatar: pedroAvatar,
-      name: "Pedro.singulai",
-      wallet: "0x9C8b...3E7d",
-      icon: Star,
-      title: t("avatar.fanExp"),
-      description: t("avatar.fanDesc"),
-      tag: t("avatar.creator"),
-      tagColor: "bg-yellow-500/20 text-yellow-400",
-      tokens: "42,100",
-      nfts: "24",
-      apy: "25%",
-    },
-  ];
-
+  const stats = [{
+    label: t("hero.tvl"),
+    value: "$2.4M"
+  }, {
+    label: t("hero.avatars"),
+    value: "12,847"
+  }, {
+    label: t("hero.tokens"),
+    value: "847M"
+  }, {
+    label: t("hero.legacy"),
+    value: "3,291"
+  }];
+  const avatarCards = [{
+    id: 1,
+    avatar: lauraAvatar,
+    name: "Laura.singulai",
+    wallet: "0x7F3a...8B2c",
+    icon: Heart,
+    title: t("avatar.familyLegacy"),
+    description: t("avatar.familyDesc"),
+    tag: t("avatar.personal"),
+    tagColor: "bg-pink-500/20 text-pink-400",
+    tokens: "2,847",
+    nfts: "3",
+    apy: "12%"
+  }, {
+    id: 2,
+    avatar: leticiaAvatar,
+    name: "Leticia.singulai",
+    wallet: "0x4D2e...9A1f",
+    icon: Briefcase,
+    title: t("avatar.mentor"),
+    description: t("avatar.mentorDesc"),
+    tag: t("avatar.business"),
+    tagColor: "bg-blue-500/20 text-blue-400",
+    tokens: "15,420",
+    nfts: "8",
+    apy: "18%"
+  }, {
+    id: 3,
+    avatar: pedroAvatar,
+    name: "Pedro.singulai",
+    wallet: "0x9C8b...3E7d",
+    icon: Star,
+    title: t("avatar.fanExp"),
+    description: t("avatar.fanDesc"),
+    tag: t("avatar.creator"),
+    tagColor: "bg-yellow-500/20 text-yellow-400",
+    tokens: "42,100",
+    nfts: "24",
+    apy: "25%"
+  }];
   useEffect(() => {
     const interval = setInterval(() => {
       setIsAnimating(true);
       setTimeout(() => {
-        setCurrentIndex((prev) => (prev + 1) % 3);
+        setCurrentIndex(prev => (prev + 1) % 3);
         setIsAnimating(false);
       }, 300);
     }, 5000);
-
     return () => clearInterval(interval);
   }, []);
-
   const currentCard = avatarCards[currentIndex];
   const IconComponent = currentCard.icon;
-
-  return (
-    <section id="hero" className="relative min-h-screen flex items-center pt-20 overflow-hidden">
+  return <section id="hero" className="relative min-h-screen flex items-center pt-20 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-muted/20" />
         <div className="absolute top-1/4 left-1/4 w-48 md:w-96 h-48 md:h-96 bg-primary/10 rounded-full blur-[128px] animate-pulse-slow" />
-        <div className="absolute bottom-1/4 right-1/4 w-48 md:w-96 h-48 md:h-96 bg-accent/10 rounded-full blur-[128px] animate-pulse-slow" style={{ animationDelay: "2s" }} />
-        <div 
-          className="absolute inset-0 opacity-[0.02]"
-          style={{
-            backgroundImage: `linear-gradient(rgba(0,0,0,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,.1) 1px, transparent 1px)`,
-            backgroundSize: '64px 64px'
-          }}
-        />
+        <div className="absolute bottom-1/4 right-1/4 w-48 md:w-96 h-48 md:h-96 bg-accent/10 rounded-full blur-[128px] animate-pulse-slow" style={{
+        animationDelay: "2s"
+      }} />
+        <div className="absolute inset-0 opacity-[0.02]" style={{
+        backgroundImage: `linear-gradient(rgba(0,0,0,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,.1) 1px, transparent 1px)`,
+        backgroundSize: '64px 64px'
+      }} />
       </div>
 
       <Container size="xl" className="py-8 md:py-24">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center py-0 my-0 px-[3px]">
           
           {/* Left Column - Content */}
-          <div className="space-y-6 md:space-y-8">
+          <div className="space-y-6 md:space-y-8 py-0 px-[23px]">
             
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs md:text-sm font-medium">
@@ -114,9 +110,9 @@ export function HeroSection() {
               {/* Title */}
               <div className="flex-1 min-w-0">
                 <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-foreground leading-[1.1] tracking-[-0.02em]">
-                  <span className="block font-semibold">{t("hero.title1")}</span>
-                  <span className="block font-semibold text-gradient">{t("hero.title2")}</span>
-                  <span className="block font-semibold text-muted-foreground">{t("hero.title3")}</span>
+                  <span className="block font-semibold text-6xl py-0 text-white">{t("hero.title1")}</span>
+                  <span className="block text-gradient font-bold text-7xl">{t("hero.title2")}</span>
+                  <span className="block font-semibold text-6xl py-[4px] text-white">{t("hero.title3")}</span>
                 </h1>
               </div>
 
@@ -127,11 +123,7 @@ export function HeroSection() {
                     <div className="flex flex-col items-center">
                       <div className="relative mb-2">
                         <div className="w-14 h-14 rounded-xl overflow-hidden border border-primary/30">
-                          <img
-                            src={currentCard.avatar}
-                            alt={`${currentCard.name} Avatar`}
-                            className="w-full h-full object-cover object-top"
-                          />
+                          <img src={currentCard.avatar} alt={`${currentCard.name} Avatar`} className="w-full h-full object-cover object-top" />
                         </div>
                         <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-md bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                           <IconComponent className="w-2.5 h-2.5 text-white" />
@@ -142,24 +134,13 @@ export function HeroSection() {
                       
                       {/* Indicators */}
                       <div className="flex justify-center gap-1 mt-2">
-                        {avatarCards.map((_, index) => (
-                          <button
-                            key={index}
-                            onClick={() => {
-                              setIsAnimating(true);
-                              setTimeout(() => {
-                                setCurrentIndex(index);
-                                setIsAnimating(false);
-                              }, 300);
-                            }}
-                            className={`h-1 rounded-full transition-all duration-300 ${
-                              index === currentIndex 
-                                ? 'bg-primary w-3' 
-                                : 'bg-muted-foreground/30 w-1'
-                            }`}
-                            aria-label={`Go to avatar ${index + 1}`}
-                          />
-                        ))}
+                        {avatarCards.map((_, index) => <button key={index} onClick={() => {
+                        setIsAnimating(true);
+                        setTimeout(() => {
+                          setCurrentIndex(index);
+                          setIsAnimating(false);
+                        }, 300);
+                      }} className={`h-1 rounded-full transition-all duration-300 ${index === currentIndex ? 'bg-primary w-3' : 'bg-muted-foreground/30 w-1'}`} aria-label={`Go to avatar ${index + 1}`} />)}
                       </div>
                     </div>
                   </GlassCard>
@@ -188,13 +169,11 @@ export function HeroSection() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 pt-6 md:pt-8 border-t border-border">
-              {stats.map((stat) => (
-                <div key={stat.label}>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 pt-6 md:pt-8 border-t border-border py-0 my-0 px-0">
+              {stats.map(stat => <div key={stat.label}>
                   <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground leading-tight">{stat.value}</p>
                   <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5">{stat.label}</p>
-                </div>
-              ))}
+                </div>)}
             </div>
           </div>
 
@@ -212,11 +191,7 @@ export function HeroSection() {
 
                 <div className="relative">
                   <div className="w-40 h-40 rounded-3xl overflow-hidden border-2 border-primary/30 shadow-glow">
-                    <img
-                      src={currentCard.avatar}
-                      alt={`${currentCard.name} Avatar`}
-                      className="w-full h-full object-cover object-top"
-                    />
+                    <img src={currentCard.avatar} alt={`${currentCard.name} Avatar`} className="w-full h-full object-cover object-top" />
                   </div>
                   <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-glow">
                     <IconComponent className="w-5 h-5 text-white" />
@@ -257,29 +232,20 @@ export function HeroSection() {
 
               {/* Carousel Indicators */}
               <div className="flex justify-center gap-2 mt-6">
-                {avatarCards.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      setIsAnimating(true);
-                      setTimeout(() => {
-                        setCurrentIndex(index);
-                        setIsAnimating(false);
-                      }, 300);
-                    }}
-                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                      index === currentIndex 
-                        ? 'bg-primary w-6' 
-                        : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
-                    }`}
-                    aria-label={`Go to avatar ${index + 1}`}
-                  />
-                ))}
+                {avatarCards.map((_, index) => <button key={index} onClick={() => {
+                setIsAnimating(true);
+                setTimeout(() => {
+                  setCurrentIndex(index);
+                  setIsAnimating(false);
+                }, 300);
+              }} className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentIndex ? 'bg-primary w-6' : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'}`} aria-label={`Go to avatar ${index + 1}`} />)}
               </div>
             </GlassCard>
 
             {/* Floating elements */}
-            <div className="absolute -top-4 -left-4 animate-float" style={{ animationDelay: "0.5s" }}>
+            <div className="absolute -top-4 -left-4 animate-float" style={{
+            animationDelay: "0.5s"
+          }}>
               <GlassCard size="sm" className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
                   <Coins className="w-4 h-4 text-green-500" />
@@ -291,7 +257,9 @@ export function HeroSection() {
               </GlassCard>
             </div>
 
-            <div className="absolute -bottom-4 -right-4 animate-float" style={{ animationDelay: "1s" }}>
+            <div className="absolute -bottom-4 -right-4 animate-float" style={{
+            animationDelay: "1s"
+          }}>
               <GlassCard size="sm" className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
                   <Clock className="w-4 h-4 text-primary" />
@@ -305,6 +273,5 @@ export function HeroSection() {
           </div>
         </div>
       </Container>
-    </section>
-  );
+    </section>;
 }
