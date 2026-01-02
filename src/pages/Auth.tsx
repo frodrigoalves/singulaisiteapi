@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
+import { useWalletAuth } from '@/hooks/use-wallet-auth';
+import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { GlassCard } from '@/components/ui/glass-card';
+import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Mail, Lock, User, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Mail, Lock, User, ArrowLeft, Eye, EyeOff, Wallet } from 'lucide-react';
 import { z } from 'zod';
 import logoSingulai from '@/assets/logo-singulai.png';
 
@@ -23,6 +26,8 @@ export default function Auth() {
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   
   const { signIn, signUp, isAuthenticated, loading } = useAuth();
+  const { isConnected, isAuthenticating, authenticateWithWallet } = useWalletAuth();
+  const { openConnectModal } = useConnectModal();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -34,6 +39,17 @@ export default function Auth() {
       navigate(from, { replace: true });
     }
   }, [isAuthenticated, loading, navigate, from]);
+
+  // Auto-authenticate when wallet connects
+  useEffect(() => {
+    if (isConnected && !isAuthenticated && !isAuthenticating) {
+      authenticateWithWallet().then(({ success }) => {
+        if (success) {
+          navigate(from, { replace: true });
+        }
+      });
+    }
+  }, [isConnected, isAuthenticated, isAuthenticating, authenticateWithWallet, navigate, from]);
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {};
@@ -120,10 +136,19 @@ export default function Auth() {
     }
   };
 
-  if (loading) {
+  const handleWalletConnect = () => {
+    if (openConnectModal) {
+      openConnectModal();
+    }
+  };
+
+  if (loading || isAuthenticating) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        {isAuthenticating && (
+          <p className="text-muted-foreground">Autenticando com wallet...</p>
+        )}
       </div>
     );
   }
@@ -158,6 +183,26 @@ export default function Auth() {
                 ? 'Acesse seu dashboard SingulAI'
                 : 'Crie sua conta para começar'}
             </p>
+          </div>
+
+          {/* Wallet Connect Button */}
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            className="w-full gap-3 mb-6 h-14 text-base"
+            onClick={handleWalletConnect}
+            disabled={isAuthenticating}
+          >
+            <Wallet className="w-5 h-5" />
+            Conectar com Wallet
+          </Button>
+
+          <div className="relative mb-6">
+            <Separator />
+            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-4 text-sm text-muted-foreground">
+              ou
+            </span>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
