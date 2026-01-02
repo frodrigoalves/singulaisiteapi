@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      airdrops: {
+        Row: {
+          amount: number
+          claimed_at: string | null
+          created_at: string
+          id: string
+          status: string
+          tx_hash: string | null
+          user_id: string
+          wallet_address: string
+        }
+        Insert: {
+          amount?: number
+          claimed_at?: string | null
+          created_at?: string
+          id?: string
+          status?: string
+          tx_hash?: string | null
+          user_id: string
+          wallet_address: string
+        }
+        Update: {
+          amount?: number
+          claimed_at?: string | null
+          created_at?: string
+          id?: string
+          status?: string
+          tx_hash?: string | null
+          user_id?: string
+          wallet_address?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
