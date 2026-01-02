@@ -1,5 +1,5 @@
 // API Client for SingulAI Backend
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://72.60.147.56:3004/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.singulai.site/api/v1';
 const API_TIMEOUT = Number(import.meta.env.VITE_API_TIMEOUT) || 30000;
 const API_RETRIES = Number(import.meta.env.VITE_API_RETRIES) || 3;
 
