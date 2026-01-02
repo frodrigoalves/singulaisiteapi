@@ -1,28 +1,33 @@
-﻿// Configuracao simplificada - sem RainbowKit
-export const SUPPORTED_CHAINS = {
-  BASE_MAINNET: {
-    id: 8453,
-    name: "Base",
-    rpcUrl: "https://mainnet.base.org",
-    explorer: "https://basescan.org",
-  },
-  BASE_SEPOLIA: {
-    id: 84532,
-    name: "Base Sepolia",
-    rpcUrl: "https://sepolia.base.org",
-    explorer: "https://sepolia.basescan.org",
+﻿// Web3 Configuration - Simplified (sem RainbowKit)
+// Configuracao para rede Base
+
+export const CHAIN_CONFIG = {
+  id: 8453,
+  name: "Base",
+  network: "base",
+  rpcUrl: "https://mainnet.base.org",
+  blockExplorer: "https://basescan.org",
+  nativeCurrency: {
+    name: "Ethereum",
+    symbol: "ETH",
+    decimals: 18,
   },
 };
 
 export const SGL_TOKEN = {
+  address: "0x0000000000000000000000000000000000000000", // TODO: Substituir pelo endereco real do token
   symbol: "SGL",
   name: "SingulAI Token",
   decimals: 18,
-  // Endereco do contrato (atualizar quando deployar)
-  address: {
-    [SUPPORTED_CHAINS.BASE_MAINNET.id]: "0x...", // Mainnet
-    [SUPPORTED_CHAINS.BASE_SEPOLIA.id]: "0x...", // Testnet
-  },
 };
 
-export const DEFAULT_CHAIN = SUPPORTED_CHAINS.BASE_SEPOLIA;
+// Funcao para formatar endereco
+export function formatAddress(address: string): string {
+  if (!address) return "";
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
+// Funcao para validar endereco Ethereum
+export function isValidAddress(address: string): boolean {
+  return /^0x[a-fA-F0-9]{40}$/.test(address);
+}
