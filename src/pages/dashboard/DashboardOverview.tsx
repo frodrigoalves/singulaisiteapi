@@ -32,6 +32,7 @@ import lauraAvatar from "@/assets/avatars/laura.png";
 import petraAvatar from "@/assets/avatars/leticia.png";
 import pedroAvatar from "@/assets/avatars/pedro.png";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RealtimeTransactionsPanel } from "@/components/dashboard/realtime-transactions-panel";
 
 // Fallback avatars for display
 const fallbackAvatars = [
@@ -222,6 +223,9 @@ export default function DashboardOverview() {
           </Link>
         </div>
       </GlassCard>
+
+      {/* Realtime Transactions Panel */}
+      <RealtimeTransactionsPanel />
 
       {/* Recent activity */}
       <GlassCard variant="default" size="default">
