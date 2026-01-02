@@ -110,10 +110,10 @@ export function HeroSection() {
                   {t("hero.badge")}
                 </div>
                 
-                <h1 className="text-xl sm:text-3xl md:text-h1 lg:text-display font-bold text-foreground leading-tight">
-                  <span className="block">{t("hero.title1")}</span>
-                  <span className="block text-gradient">{t("hero.title2")}</span>
-                  <span className="block">{t("hero.title3")}</span>
+                <h1 className="font-heading text-2xl sm:text-4xl md:text-h1 lg:text-display text-foreground leading-[1.05] tracking-[-0.03em]">
+                  <span className="block font-semibold">{t("hero.title1")}</span>
+                  <span className="block font-semibold text-gradient">{t("hero.title2")}</span>
+                  <span className="block font-semibold text-muted-foreground">{t("hero.title3")}</span>
                 </h1>
                 
                 <p className="text-xs md:text-body-lg text-muted-foreground max-w-xl hidden md:block">

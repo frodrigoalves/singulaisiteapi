@@ -1,4 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=SF+Pro+Display:wght@400;500;600;700&display=swap');
+
+/* SF Pro fallback using system fonts */
+@font-face {
+  font-family: 'SF Pro Display';
+  src: local('-apple-system'), local('BlinkMacSystemFont'), local('system-ui');
+  font-weight: 400 700;
+  font-style: normal;
+}
 
 @tailwind base;
 @tailwind components;
