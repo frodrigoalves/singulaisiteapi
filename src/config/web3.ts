@@ -1,38 +1,39 @@
-﻿// Configuracao Web3 simplificada (sem RainbowKit)
-import { sepolia, mainnet, base } from "viem/chains";
+﻿// Configuracao Web3 - Rede Base (ou Sepolia para testes)
+// SEM RainbowKit - apenas viem para leitura de blockchain
 
-export const SUPPORTED_CHAINS = {
-  sepolia: {
-    id: 11155111,
-    name: "Sepolia",
-    rpcUrl: import.meta.env.VITE_RPC_URL || "https://ethereum-sepolia-rpc.publicnode.com",
-    explorer: "https://sepolia.etherscan.io",
-  },
-  mainnet: {
-    id: 1,
-    name: "Ethereum",
-    rpcUrl: "https://eth.llamarpc.com",
-    explorer: "https://etherscan.io",
-  },
+export const CHAIN_CONFIG = {
+  // Base Mainnet
   base: {
     id: 8453,
     name: "Base",
     rpcUrl: "https://mainnet.base.org",
     explorer: "https://basescan.org",
+    currency: "ETH",
+  },
+  // Base Sepolia (testnet)
+  baseSepolia: {
+    id: 84532,
+    name: "Base Sepolia",
+    rpcUrl: "https://sepolia.base.org",
+    explorer: "https://sepolia.basescan.org",
+    currency: "ETH",
+  },
+  // Sepolia (testnet Ethereum)
+  sepolia: {
+    id: 11155111,
+    name: "Sepolia",
+    rpcUrl: "https://rpc.sepolia.org",
+    explorer: "https://sepolia.etherscan.io",
+    currency: "ETH",
   },
 };
 
-// Chain atual (do .env)
-export const CURRENT_CHAIN_ID = Number(import.meta.env.VITE_CHAIN_ID) || 11155111;
+// Rede atual (mudar para "base" em producao)
+export const CURRENT_CHAIN = CHAIN_CONFIG.sepolia;
 
-// Enderecos dos contratos
-export const CONTRACTS = {
-  SGL_TOKEN: import.meta.env.VITE_SGL_TOKEN_ADDRESS as `0x${string}`,
-  AVATAR_BASE: import.meta.env.VITE_AVATAR_BASE_ADDRESS as `0x${string}`,
-  AVATAR_WALLET_LINK: import.meta.env.VITE_AVATAR_WALLET_LINK_ADDRESS as `0x${string}`,
-  TIMECAPSULE: import.meta.env.VITE_TIMECAPSULE_ADDRESS as `0x${string}`,
-  LEGACY: import.meta.env.VITE_LEGACY_ADDRESS as `0x${string}`,
-};
+// Endereco do contrato SGL Token
+// TODO: Atualizar com endereco real apos deploy
+export const SGL_TOKEN_ADDRESS = "0x0000000000000000000000000000000000000000" as const;
 
-// Export vazio para manter compatibilidade (remover depois)
-export const config = {};
+// Verificar se o token esta deployado
+export const IS_TOKEN_DEPLOYED = SGL_TOKEN_ADDRESS !== "0x0000000000000000000000000000000000000000";
