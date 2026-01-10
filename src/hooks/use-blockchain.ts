@@ -1,171 +1,148 @@
-﻿import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "./use-auth";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './use-auth';
+import { useAccount } from 'wagmi';
 
-// Get wallet address from Supabase profile
+// Get the connected wallet address (from Web3 wallet or Supabase profile)
 export function useWalletAddress() {
+  const { address: web3Address } = useAccount();
   const { user } = useAuth();
-  const [address, setAddress] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchWallet() {
-      if (!user) {
-        setAddress(null);
-        setLoading(false);
-        return;
-      }
+  // Try Web3 wallet first
+  if (web3Address) {
+    return web3Address;
+  }
 
-      try {
-        const { data } = await supabase
-          .from("profiles")
-          .select("wallet_address")
-          .eq("user_id", user.id)
-          .single();
-
-        setAddress(data?.wallet_address || null);
-      } catch (error) {
-        console.error("Error fetching wallet:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchWallet();
-  }, [user]);
-
-  return { address, loading, isConnected: !!address };
+  // Fallback to localStorage (for legacy support)
+  const storedAddress = localStorage.getItem('walletAddress');
+  return storedAddress || null;
 }
 
-// Get full wallet info
-export function useWalletInfo() {
-  const { address, loading, isConnected } = useWalletAddress();
-  
-  return {
-    address,
-    loading,
-    isConnected,
-    network: "base",
-    chainId: 8453,
-  };
-}
-
-// Get SGL token balance
-export function useSglBalance() {
-  const { user } = useAuth();
-  
-  return useQuery({
-    queryKey: ["sgl-balance", user?.id],
-    queryFn: async () => {
-      if (!user) return "0.00";
-      
-      const { data } = await supabase
-        .from("profiles")
-        .select("sgl_balance")
-        .eq("user_id", user.id)
-        .single();
-      
-      return data?.sgl_balance?.toString() || "0.00";
-    },
-    enabled: !!user,
-  });
-}
-
-// Get Avatar balance (quantity owned)
-export function useAvatarBalance() {
-  const { user } = useAuth();
-  
-  return useQuery({
-    queryKey: ["avatar-balance", user?.id],
-    queryFn: async () => {
-      if (!user) return 0;
-      
-      const { count } = await supabase
-        .from("user_avatars")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id);
-      
-      return count || 0;
-    },
-    enabled: !!user,
-  });
-}
-
-// Get user profile
+// Get user profile with wallet address from Supabase
 export function useUserProfile() {
   const { user } = useAuth();
   
   return useQuery({
-    queryKey: ["user-profile", user?.id],
+    queryKey: ['profile', user?.id],
     queryFn: async () => {
-      if (!user) return null;
+      if (!user?.id) return null;
       
-      const { data } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", user.id)
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
         .single();
       
+      if (error) throw error;
       return data;
     },
-    enabled: !!user,
+    enabled: !!user?.id,
   });
 }
 
-// Get user airdrops
+// Get user's airdrop status
 export function useUserAirdrop() {
   const { user } = useAuth();
   
   return useQuery({
-    queryKey: ["user-airdrops", user?.id],
+    queryKey: ['airdrop', user?.id],
     queryFn: async () => {
-      if (!user) return [];
+      if (!user?.id) return null;
       
-      const { data } = await supabase
-        .from("airdrops")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from('airdrops')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
       
-      return data || [];
+      if (error) throw error;
+      return data;
     },
-    enabled: !!user,
+    enabled: !!user?.id,
   });
 }
 
-// Get user transactions
-export function useUserTransactions() {
-  const { user } = useAuth();
-  
+// Blockchain health check
+export function useBlockchainHealth() {
   return useQuery({
-    queryKey: ["user-transactions", user?.id],
-    queryFn: async () => {
-      if (!user) return [];
-      
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("wallet_address")
-        .eq("user_id", user.id)
-        .single();
-      
-      if (!profile?.wallet_address) return [];
-      
-      const { data } = await supabase
-        .from("transactions")
-        .select("*")
-        .or(`from_address.eq.${profile.wallet_address},to_address.eq.${profile.wallet_address}`)
-        .order("created_at", { ascending: false })
-        .limit(20);
-      
-      return data || [];
-    },
-    enabled: !!user,
+    queryKey: ['blockchain', 'health'],
+    queryFn: () => api.getBlockchainHealth(),
+    refetchInterval: 30000, // Every 30s
   });
 }
 
-// Legacy export for compatibility
-export function useTokenBalance() {
-  const { data: balance, isLoading } = useSglBalance();
-  return { balance: balance || "0.00", loading: isLoading };
+// Blockchain status (network, gas, etc)
+export function useBlockchainStatus() {
+  return useQuery({
+    queryKey: ['blockchain', 'status'],
+    queryFn: () => api.getBlockchainStatus(),
+    refetchInterval: 15000, // Every 15s
+  });
+}
+
+// Wallet info (ETH + SGL balance)
+export function useWalletInfo(address: string | null) {
+  return useQuery({
+    queryKey: ['wallet', address],
+    queryFn: () => api.getWalletInfo(address!),
+    enabled: !!address,
+    refetchInterval: 10000, // Every 10s
+  });
+}
+
+// SGL Token info
+export function useSglInfo() {
+  return useQuery({
+    queryKey: ['sgl', 'info'],
+    queryFn: () => api.getSglInfo(),
+    staleTime: 60000, // Cache for 1 min
+  });
+}
+
+// SGL Balance for a specific address
+export function useSglBalance(address: string | null) {
+  return useQuery({
+    queryKey: ['sgl', 'balance', address],
+    queryFn: () => api.getSglBalance(address!),
+    enabled: !!address,
+    refetchInterval: 10000,
+  });
+}
+
+// Transfer SGL
+export function useTransferSgl() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (data: { from: string; to: string; amount: string }) => 
+      api.transferSgl(data),
+    onSuccess: (_, variables) => {
+      // Invalidate balances
+      queryClient.invalidateQueries({ queryKey: ['sgl', 'balance', variables.from] });
+      queryClient.invalidateQueries({ queryKey: ['sgl', 'balance', variables.to] });
+      queryClient.invalidateQueries({ queryKey: ['wallet', variables.from] });
+    },
+  });
+}
+
+// Avatar balance
+export function useAvatarBalance(address: string | null) {
+  return useQuery({
+    queryKey: ['avatar', 'balance', address],
+    queryFn: () => api.getAvatarBalance(address!),
+    enabled: !!address,
+  });
+}
+
+// Mint avatar
+export function useMintAvatar() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (data: { to: string; uri: string }) => api.mintAvatar(data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['avatar', 'balance', variables.to] });
+    },
+  });
 }

@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,8 @@ import { WalletButton } from "@/components/web3/wallet-button";
 import { useApp } from "@/contexts/app-context";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useWalletAddress, useSglBalance } from "@/hooks/use-blockchain";
+import { useAccount, useDisconnect } from "wagmi";
 import logo from "@/assets/logo-singulai.png";
 import {
   LayoutGrid,
@@ -27,83 +28,39 @@ import {
 
 export function DashboardLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  const [balance, setBalance] = useState("0.00");
   const location = useLocation();
   const navigate = useNavigate();
   const { language, setLanguage, t } = useApp();
   const { user, signOut } = useAuth();
   const { toast } = useToast();
-
-  // Carregar wallet do usuario do Supabase
-  useEffect(() => {
-    async function loadWallet() {
-      if (!user) return;
-      
-      try {
-        const { data } = await supabase
-          .from("profiles")
-          .select("wallet_address")
-          .eq("user_id", user.id)
-          .single();
-
-        if (data?.wallet_address) {
-          setWalletAddress(data.wallet_address);
-        }
-
-        // Buscar saldo
-        const { data: balanceData } = await supabase
-          .from("token_balances")
-          .select("balance")
-          .eq("user_id", user.id)
-          .eq("token_symbol", "SGL")
-          .single();
-
-        if (balanceData) {
-          setBalance(balanceData.balance.toLocaleString());
-        }
-      } catch (error) {
-        console.error("Error loading wallet:", error);
-      }
-    }
-
-    loadWallet();
-  }, [user]);
+  
+  // Real wallet data from wagmi
+  const { address: walletAddress, isConnected } = useAccount();
+  const { disconnect } = useDisconnect();
+  const storedAddress = useWalletAddress();
+  const actualAddress = walletAddress || storedAddress;
+  const { data: sglBalance } = useSglBalance(actualAddress);
 
   const handleSignOut = async () => {
+    disconnect();
     const { error } = await signOut();
     if (error) {
       toast({
-        title: "Erro ao sair",
+        title: 'Erro ao sair',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     } else {
-      navigate("/");
+      navigate('/');
     }
   };
 
-  const handleDisconnectWallet = async () => {
-    if (!user) return;
-
-    try {
-      await supabase
-        .from("profiles")
-        .update({ wallet_address: null })
-        .eq("user_id", user.id);
-
-      setWalletAddress(null);
-      toast({
-        title: "Wallet desconectada",
-        description: "Sua wallet foi desconectada com sucesso.",
-      });
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Nao foi possivel desconectar a wallet.",
-        variant: "destructive",
-      });
-    }
+  const handleDisconnectWallet = () => {
+    disconnect();
+    toast({
+      title: 'Wallet desconectada',
+      description: 'Sua wallet foi desconectada com sucesso.',
+    });
   };
 
   const navItems = [
@@ -115,6 +72,9 @@ export function DashboardLayout() {
     { labelKey: "sidebar.legacy", icon: Shield, href: "/dashboard/legacy" },
     { labelKey: "sidebar.settings", icon: Settings, href: "/dashboard/settings" },
   ];
+
+  // Real wallet data
+  const balance = sglBalance?.formatted || "0.00";
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -172,12 +132,14 @@ export function DashboardLayout() {
 
         {/* Bottom actions */}
         <div className="p-3 border-t border-sidebar-border space-y-2">
+          {/* User info */}
           {!sidebarCollapsed && user && (
             <div className="px-3 py-2 mb-2">
               <p className="text-xs text-muted-foreground truncate">{user.email}</p>
             </div>
           )}
-
+          
+          {/* Language toggle */}
           <Button
             variant="ghost"
             size={sidebarCollapsed ? "icon" : "default"}
@@ -193,6 +155,7 @@ export function DashboardLayout() {
             )}
           </Button>
 
+          {/* Logout button */}
           <Button
             variant="ghost"
             size={sidebarCollapsed ? "icon" : "default"}
@@ -220,7 +183,9 @@ export function DashboardLayout() {
         {/* Top bar */}
         <header className="h-16 border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-30">
           <div className="h-full px-6 flex items-center justify-between">
+            {/* Left side */}
             <div className="flex items-center gap-4">
+              {/* Breadcrumb */}
               <nav className="text-sm">
                 <span className="text-muted-foreground">{t("nav.dashboard")}</span>
                 {location.pathname !== "/dashboard" && (
@@ -234,7 +199,9 @@ export function DashboardLayout() {
               </nav>
             </div>
 
+            {/* Right side */}
             <div className="flex items-center gap-4">
+              {/* Search */}
               <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary/50 border border-border">
                 <Search className="w-4 h-4 text-muted-foreground" />
                 <input
@@ -244,34 +211,38 @@ export function DashboardLayout() {
                 />
               </div>
 
+              {/* Notifications */}
               <Button variant="ghost" size="icon" className="relative">
                 <Bell className="w-5 h-5" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />
               </Button>
 
-              {walletAddress && (
+              {/* Etherscan link */}
+              {actualAddress && (
                 <a
-                  href={`https://basescan.org/address/${walletAddress}`}
+                  href={`https://sepolia.etherscan.io/address/${actualAddress}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hidden md:flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  <span>BaseScan</span>
+                  <span>Etherscan</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
               )}
 
+              {/* Wallet */}
               <WalletButton
-                isConnected={!!walletAddress}
-                address={walletAddress || undefined}
+                isConnected={isConnected || !!actualAddress}
+                address={actualAddress || undefined}
                 balance={balance}
-                network="base"
+                network="sepolia"
                 onDisconnect={handleDisconnectWallet}
               />
             </div>
           </div>
         </header>
 
+        {/* Page content */}
         <main className="p-6">
           <Outlet />
         </main>

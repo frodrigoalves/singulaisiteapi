@@ -1,38 +1,38 @@
-﻿import { ReactNode, createContext, useContext, useState } from 'react';
+import { ReactNode } from 'react';
+import { WagmiProvider } from 'wagmi';
+import { RainbowKitProvider, darkTheme, lightTheme } from '@rainbow-me/rainbowkit';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { config } from '@/config/web3';
+import '@rainbow-me/rainbowkit/styles.css';
 
-interface Web3ContextType {
-  isConnected: boolean;
-  walletAddress: string | null;
-  setWalletAddress: (address: string | null) => void;
-  setIsConnected: (connected: boolean) => void;
-}
-
-const Web3Context = createContext<Web3ContextType | null>(null);
+const queryClient = new QueryClient();
 
 interface Web3ProviderProps {
   children: ReactNode;
 }
 
 export function Web3Provider({ children }: Web3ProviderProps) {
-  const [isConnected, setIsConnected] = useState(false);
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
-
   return (
-    <Web3Context.Provider value={{ 
-      isConnected, 
-      walletAddress, 
-      setWalletAddress, 
-      setIsConnected 
-    }}>
-      {children}
-    </Web3Context.Provider>
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <RainbowKitProvider
+          theme={{
+            lightMode: lightTheme({
+              accentColor: '#1a1a1a',
+              accentColorForeground: 'white',
+              borderRadius: 'medium',
+            }),
+            darkMode: darkTheme({
+              accentColor: '#d9d9d9',
+              accentColorForeground: '#0d0d0d',
+              borderRadius: 'medium',
+            }),
+          }}
+          modalSize="compact"
+        >
+          {children}
+        </RainbowKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
-}
-
-export function useWeb3() {
-  const context = useContext(Web3Context);
-  if (!context) {
-    throw new Error('useWeb3 must be used within a Web3Provider');
-  }
-  return context;
 }
